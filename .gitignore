@@ -1,0 +1,4 @@
+# 배포에 불필요한 대용량/중복 파일
+players.json
+site/
+*.zip
