@@ -121,6 +121,7 @@ const DATA={hit:(window.KBO_PLAYERS||[]),pit:(window.KBO_PITCHERS||[])};
 // 포지션 부여 (포수/내야/외야 = positions.js, 투수 = 전부 '투수')
 DATA.hit.forEach(p=>{p.pos=(window.KBO_POS&&window.KBO_POS[p.pid])||'내야';});
 DATA.pit.forEach(p=>{p.pos='투수';});
+const POSKR={'내야':'내야수','외야':'외야수','포수':'포수','투수':'투수'};
 function gradeOf(s){
   if(s>=80) return {l:"S",g1:"#ffd86b",g2:"#ff9f1c",c:"#ffcf5c"};
   if(s>=68) return {l:"A",g1:"#c89bff",g2:"#7b3ff2",c:"#c39bff"};
@@ -229,17 +230,17 @@ function renderTray(){
   const list=DATA[trayType].filter(p=>(!q||p.name.includes(q))).sort((a,b)=>b._ovr-a._ovr)
     .filter(p=>!used.has(trayType+p.pid));
   document.getElementById('traygrid').innerHTML=list.slice(0,120).map(p=>{
-    const sub=trayType==='hit'?`OPS ${(p.OPS||0).toFixed(3).replace(/^0/,'')}`:`ERA ${(p.ERA||0).toFixed(2)} ${p.role}`;
+    const sub=trayType==='hit'?`${POSKR[p.pos]||'야수'} · OPS ${(p.OPS||0).toFixed(3).replace(/^0/,'')}`:`${p.role} · ERA ${(p.ERA||0).toFixed(2)}`;
     const sel=picked&&picked.type===trayType&&picked.pid===p.pid?'sel':'';
     return `<div class="pcard ${sel}" draggable="true" data-pid="${p.pid}">
-      <img src="${p.photo}" onerror="this.onerror=null;this.src='${noimg}'">
+      <img src="${p.photo}" draggable="false" onerror="this.onerror=null;this.src='${noimg}'">
       <div style="min-width:0"><div class="nm">${p.name}</div><div class="mt">${p.team} · ${sub}</div></div>
       <div class="g" style="background:linear-gradient(160deg,${p._g.g1},${p._g.g2})">${p._g.l}</div></div>`;
   }).join('')||`<div style="color:#6c7894;font-size:13px;padding:10px">선수 없음</div>`;
   document.querySelectorAll('.pcard').forEach(el=>{
     const pid=el.dataset.pid;
     el.onclick=()=>{picked=(picked&&picked.pid===pid)?null:{type:trayType,pid};renderTray();};
-    el.ondragstart=()=>{dragData={type:trayType,pid};};
+    el.ondragstart=(e)=>{dragData={type:trayType,pid};try{e.dataTransfer.setData('text/plain',pid);e.dataTransfer.effectAllowed='move';}catch(_){}};
     el.ondragend=()=>{dragData=null;document.querySelectorAll('.slot').forEach(s=>s.classList.remove('tgt'));};
   });
   markSlots();

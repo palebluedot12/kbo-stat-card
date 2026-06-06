@@ -129,8 +129,11 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="data.js"></script>
 <script src="data_pitchers.js"></script>
+<script src="positions.js"></script>
 <script>
 const DATA={hit:(window.KBO_PLAYERS||[]),pit:(window.KBO_PITCHERS||[])};
+DATA.hit.forEach(p=>{p.pos=(window.KBO_POS&&window.KBO_POS[p.pid])||'내야';});
+const POSKR={'내야':'내야수','외야':'외야수','포수':'포수'};
 const fmt3=v=>(v==null?'-':v.toFixed(3).replace(/^0/,''));
 const f2=v=>(v==null?'-':v.toFixed(2));
 const f1=v=>(v==null?'-':v.toFixed(1));
@@ -217,6 +220,7 @@ function render(p){
     chips+=`<span class="role">${p.role}</span>`;
     if(!enoughSample(p)) chips+=`<span class="qb n">표본 적음</span>`;
   }else{
+    chips+=`<span class="role">${POSKR[p.pos]||'야수'}</span>`;
     chips+=`<span class="qb ${p.qual?'y':'n'}">${p.qual?'규정타석':'비규정'}</span>`;
   }
   document.getElementById('chips').innerHTML=chips;
