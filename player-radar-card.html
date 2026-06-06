@@ -131,6 +131,20 @@ const fmt3=v=>(v==null?'-':v.toFixed(3).replace(/^0/,''));
 const f2=v=>(v==null?'-':v.toFixed(2));
 const f1=v=>(v==null?'-':v.toFixed(1));
 
+// ===== Simple WAR (FIP+ → 피타고리안 승률 → WAR) =====
+(function(){
+  const pit=DATA.pit; if(!pit.length)return;
+  let sf=0,sip=0; pit.forEach(p=>{sf+=p.FIP*p.IP;sip+=p.IP;});
+  const lgFIP=sf/sip;
+  pit.forEach(p=>{
+    const fip=Math.max(0.1,p.FIP);
+    const fp=lgFIP/fip*100;                                   // FIP+ (100=리그평균, 높을수록 좋음)
+    const wp=Math.pow(fp,1.8)/(Math.pow(fp,1.8)+Math.pow(100,1.8)); // 피타고리안 기대승률(지수 1.8)
+    p.FIPplus=Math.round(fp);
+    p.WAR=Math.round(((wp-0.38)/9*p.IP)*100)/100;             // (W%-.380)/9 × 이닝
+  });
+})();
+
 // get=표시값, score=높을수록좋음(백분위용), ow=OVR가중
 const AXES_HIT=[
   {kr:"타율",  ab:"AVG", get:p=>p.AVG, score:p=>p.AVG, fmt:fmt3, ow:1},
@@ -203,7 +217,7 @@ function render(p){
   }
   document.getElementById('chips').innerHTML=chips;
   if(TYPE==='hit') document.getElementById('line').innerHTML=`${p.G}경기 · <b>${p.HR}</b>홈런 · <b>${p.RBI}</b>타점 · OPS <b>${fmt3(p.OPS)}</b>`;
-  else document.getElementById('line').innerHTML=`<b>${p.ipText}</b>이닝 · ${p.W}승 ${p.L}패${p.SV>0?` ${p.SV}세`:''}${p.HLD>0?` ${p.HLD}홀`:''} · ERA <b>${f2(p.ERA)}</b>`;
+  else document.getElementById('line').innerHTML=`<b>${p.ipText}</b>이닝 · ${p.W}승 ${p.L}패${p.SV>0?` ${p.SV}세`:''}${p.HLD>0?` ${p.HLD}홀`:''} · ERA <b>${f2(p.ERA)}</b> · <b style="color:var(--g1)">WAR ${p.WAR}</b>`;
 
   let s='';
   for(let r=1;r<=5;r++){const rr=R*r/5;let pts='';for(let i=0;i<6;i++)pts+=`${(CX+rr*Math.cos(ang(i))).toFixed(1)},${(CY+rr*Math.sin(ang(i))).toFixed(1)} `;s+=`<polygon points="${pts}" fill="none" stroke="#243049" stroke-width="1"/>`;}
@@ -223,7 +237,7 @@ function render(p){
   document.getElementById('legend').innerHTML=['S','A','B','C','D','F'].map(L=>{const g=gradeOf(L=='S'?85:L=='A'?72:L=='B'?60:L=='C'?46:L=='D'?32:10);return `<span style="color:${g.c}">${L}</span>`;}).join('');
   document.getElementById('ovrnote').innerHTML=TYPE==='hit'
     ? 'OVR = <b>타격 종합등급</b> (wRC+ 중심 · 리그 백분위 100점) — 수비 미반영'
-    : 'OVR = <b>투구 종합등급</b> (FIP 중심 · 리그 백분위 100점) — 수비무관 지표';
+    : 'OVR = <b>Simple WAR 백분위</b> (역할 내 · FIP+ 피타고리안 기반) — 수비무관';
   document.querySelectorAll('.chip').forEach(ch=>ch.classList.toggle('on',+ch.dataset.i===P.indexOf(p)));
 }
 
@@ -263,7 +277,16 @@ function buildGrid(){
 function setType(t){
   TYPE=t;P=DATA[t];QUAL=P.filter(p=>p.qual);AXES=(t==='hit')?AXES_HIT:AXES_PIT;mode='all';
   buildBaselines();
-  P.forEach(p=>{let num=0,w=0;const key=keyOf(p);AXES.forEach((a,i)=>{num+=pct(i,a.score(p),key)*a.ow;w+=a.ow;});p._ovr=Math.round(num/w);p._g=gradeOf(p._ovr);});
+  if(t==='hit'){
+    // 타자: wRC+ 중심 6축 가중 백분위
+    P.forEach(p=>{let num=0,w=0;AXES.forEach((a,i)=>{num+=pct(i,a.score(p),'hit')*a.ow;w+=a.ow;});p._ovr=Math.round(num/w);p._g=gradeOf(p._ovr);});
+  }else{
+    // 투수: Simple WAR 백분위 (역할 내)
+    const spW=P.filter(p=>p.role==='선발'&&p.qual).map(p=>p.WAR).sort((a,b)=>a-b);
+    const rpW=P.filter(p=>p.role==='구원'&&p.IP>=20).map(p=>p.WAR).sort((a,b)=>a-b);
+    const wpct=p=>{const arr=p.role==='선발'?spW:rpW;if(!arr.length)return 50;let c=0;for(const x of arr)if(x<=p.WAR)c++;return Math.min(100,c/arr.length*100);};
+    P.forEach(p=>{p._ovr=Math.round(wpct(p));p._g=gradeOf(p._ovr);});
+  }
   TEAM_ORDER=[...new Set(P.map(p=>p.team))];
   curTeam="전체";curName="";document.getElementById('search').value="";
   if(t==='hit'){
