@@ -80,11 +80,11 @@
 <body>
   <div class="nav"><a href="index.html">⚾ 선수 카드</a><a href="myteam.html" class="on">🏟️ 마이팀</a></div>
   <h1>🏟️ 나만의 드림팀 만들기</h1>
-  <div class="tag">선수를 끌어다(또는 눌러서) 포지션에 배치하고 · 전력으로 상대와 대결해 잉여력을 따세요</div>
+  <div class="tag">선수를 끌어다(또는 눌러서) 포지션에 배치하고 · 전력으로 상대와 대결해 포인트을 따세요</div>
 
   <div class="board">
     <div class="stat-box"><div class="l">우리 팀 전력</div><div class="v" id="power">0</div></div>
-    <div class="stat-box"><div class="l">잉여력</div><div class="v gold" id="jaeyeo">1000</div></div>
+    <div class="stat-box"><div class="l">포인트</div><div class="v gold" id="jaeyeo">1000</div></div>
     <div class="stat-box"><div class="l">전적</div><div class="v" id="record">0승 0패</div></div>
   </div>
 
@@ -99,7 +99,7 @@
     </div>
 
     <div class="tray">
-      <div class="seg"><button id="th" class="on">⚾ 타자</button><button id="tp">🔥 투수</button></div>
+      <div class="seg"><button id="th" class="on">🏏 타자</button><button id="tp">⚾ 투수</button></div>
       <input class="search" id="search" placeholder="🔍 선수 검색...">
       <div class="hint">카드를 클릭 후 빈 포지션을 누르거나, 드래그해서 놓으세요. 채워진 포지션을 누르면 해제됩니다.</div>
       <div class="traygrid" id="traygrid"></div>
@@ -108,15 +108,19 @@
 
   <div class="note">
     ⚠️ 현재는 <b>시즌 스탯 전력 기반</b> 대결(베타)입니다. 실제 일/주 경기결과로 점수가 매겨지는 방식은 다음 단계예요.
-    잉여력은 가상 포인트(환전 불가)입니다.
+    포인트은 가상 포인트(환전 불가)입니다.
   </div>
 
   <div class="modal" id="modal"><div class="vs" id="vsbody"></div></div>
 
 <script src="data.js"></script>
 <script src="data_pitchers.js"></script>
+<script src="positions.js"></script>
 <script>
 const DATA={hit:(window.KBO_PLAYERS||[]),pit:(window.KBO_PITCHERS||[])};
+// 포지션 부여 (포수/내야/외야 = positions.js, 투수 = 전부 '투수')
+DATA.hit.forEach(p=>{p.pos=(window.KBO_POS&&window.KBO_POS[p.pid])||'내야';});
+DATA.pit.forEach(p=>{p.pos='투수';});
 function gradeOf(s){
   if(s>=80) return {l:"S",g1:"#ffd86b",g2:"#ff9f1c",c:"#ffcf5c"};
   if(s>=68) return {l:"A",g1:"#c89bff",g2:"#7b3ff2",c:"#c39bff"};
@@ -143,31 +147,32 @@ const get=(t,pid)=>DATA[t].find(p=>p.pid===pid);
 
 // ===== 슬롯 =====
 const SLOTS=[
-  {id:'CF',label:'중견',type:'hit',x:50,y:15},{id:'LF',label:'좌익',type:'hit',x:23,y:27},{id:'RF',label:'우익',type:'hit',x:77,y:27},
-  {id:'SS',label:'유격',type:'hit',x:37,y:49},{id:'2B',label:'2루',type:'hit',x:63,y:49},
-  {id:'3B',label:'3루',type:'hit',x:23,y:63},{id:'1B',label:'1루',type:'hit',x:77,y:63},
-  {id:'SP',label:'선발',type:'pit',x:50,y:65},{id:'C',label:'포수',type:'hit',x:50,y:89},
+  {id:'CF',label:'중견',type:'hit',pos:'외야',x:50,y:24},{id:'LF',label:'좌익',type:'hit',pos:'외야',x:23,y:31},{id:'RF',label:'우익',type:'hit',pos:'외야',x:77,y:31},
+  {id:'SS',label:'유격',type:'hit',pos:'내야',x:37,y:53},{id:'2B',label:'2루',type:'hit',pos:'내야',x:63,y:53},
+  {id:'3B',label:'3루',type:'hit',pos:'내야',x:22,y:62},{id:'1B',label:'1루',type:'hit',pos:'내야',x:78,y:62},
+  {id:'SP',label:'선발',type:'pit',pos:'투수',x:50,y:67},{id:'C',label:'포수',type:'hit',pos:'포수',x:50,y:90},
 ];
 const FIELD_SVG=`<svg class="fld" viewBox="0 0 500 460" preserveAspectRatio="xMidYMid meet">
   <defs><linearGradient id="gg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4bb061"/><stop offset="1" stop-color="#2f8545"/></linearGradient></defs>
-  <path d="M250 424 L56 116 A 250 250 0 0 1 444 116 Z" fill="url(#gg)"/>
-  <path d="M250 424 L118 216 A 168 168 0 0 1 382 216 Z" fill="#43a558" opacity="0.6"/>
-  <path d="M250 424 L172 296 A 96 96 0 0 1 328 296 Z" fill="#4aab5f" opacity="0.55"/>
-  <line x1="250" y1="406" x2="64" y2="124" stroke="#ffffff" stroke-width="3" opacity="0.8"/>
-  <line x1="250" y1="406" x2="436" y2="124" stroke="#ffffff" stroke-width="3" opacity="0.8"/>
-  <path d="M250 406 L364 300 L250 194 L136 300 Z" fill="#d9a25d" stroke="#c98f49" stroke-width="2" stroke-linejoin="round"/>
-  <circle cx="250" cy="404" r="40" fill="#d9a25d"/>
-  <path d="M250 384 L341 300 L250 216 L159 300 Z" fill="#46a85b"/>
+  <path d="M250 410 L476 184 A320 320 0 0 0 24 184 Z" fill="url(#gg)"/>
+  <path d="M250 410 L405 255 A220 220 0 0 0 95 255 Z" fill="#43a558" opacity="0.55"/>
+  <path d="M250 410 L335 325 A120 120 0 0 0 165 325 Z" fill="#4aab5f" opacity="0.5"/>
+  <line x1="250" y1="410" x2="24" y2="184" stroke="#ffffff" stroke-width="3" opacity="0.85"/>
+  <line x1="250" y1="410" x2="476" y2="184" stroke="#ffffff" stroke-width="3" opacity="0.85"/>
+  <path d="M250 410 L356 304 L250 198 L144 304 Z" fill="#d9a25d"/>
+  <circle cx="250" cy="410" r="38" fill="#d9a25d"/>
+  <path d="M250 391 L337 304 L250 217 L163 304 Z" fill="#46a85b"/>
   <g fill="#ffffff" stroke="#e2e2e2" stroke-width="1.5">
-    <rect x="343" y="293" width="14" height="14" transform="rotate(45 350 300)"/>
-    <rect x="243" y="193" width="14" height="14" transform="rotate(45 250 200)"/>
-    <rect x="143" y="293" width="14" height="14" transform="rotate(45 150 300)"/>
+    <rect x="349" y="297" width="14" height="14" transform="rotate(45 356 304)"/>
+    <rect x="243" y="191" width="14" height="14" transform="rotate(45 250 198)"/>
+    <rect x="137" y="297" width="14" height="14" transform="rotate(45 144 304)"/>
   </g>
-  <polygon points="242,398 258,398 258,407 250,414 242,407" fill="#ffffff"/>
-  <circle cx="250" cy="300" r="23" fill="#d9a25d"/>
-  <rect x="245" y="297" width="10" height="5" rx="1.5" fill="#ffffff"/>
+  <polygon points="242,404 258,404 258,413 250,420 242,413" fill="#ffffff"/>
+  <circle cx="250" cy="316" r="22" fill="#d9a25d"/>
+  <rect x="245" y="313" width="10" height="5" rx="1.5" fill="#ffffff"/>
 </svg>`;
-const BENCH=[{id:'DH',label:'지명타자',type:'hit'},{id:'CP',label:'마무리',type:'pit'}];
+const BENCH=[{id:'DH',label:'지명타자',type:'hit',pos:null},{id:'CP',label:'마무리',type:'pit',pos:'투수'}];
+function eligible(slot,pl){ if(!pl||slot.type!==pl.type) return false; if(!slot.pos) return true; return (pl.pos||'내야')===slot.pos; }
 const ALLSLOTS=[...SLOTS,...BENCH];
 
 // ===== 상태 (localStorage) =====
@@ -195,12 +200,21 @@ function bindSlots(){
   document.querySelectorAll('.slot').forEach(el=>{
     const sid=el.dataset.slot, slot=ALLSLOTS.find(s=>s.id===sid);
     el.onclick=()=>{
-      if(team[sid]){ team[sid]=null; delete team[sid]; save(); render(); return; }      // 해제
-      if(picked && picked.type===slot.type){ assign(sid,picked); picked=null; render(); } // 배치
+      if(team[sid]){ team[sid]=null; delete team[sid]; save(); render(); return; }                 // 해제
+      if(picked && eligible(slot,get(picked.type,picked.pid))){ assign(sid,picked); picked=null; render(); } // 배치
     };
-    el.ondragover=e=>{const d=dragData; if(d&&d.type===slot.type&&!team[sid]){e.preventDefault();el.classList.add('tgt');}};
+    el.ondragover=e=>{const d=dragData; if(d&&!team[sid]&&eligible(slot,get(d.type,d.pid))){e.preventDefault();el.classList.add('tgt');}};
     el.ondragleave=()=>el.classList.remove('tgt');
-    el.ondrop=e=>{e.preventDefault();el.classList.remove('tgt');const d=dragData;if(d&&d.type===slot.type){assign(sid,d);render();}};
+    el.ondrop=e=>{e.preventDefault();el.classList.remove('tgt');const d=dragData;if(d&&eligible(slot,get(d.type,d.pid))){assign(sid,d);render();}};
+  });
+  markSlots();
+}
+function markSlots(){
+  document.querySelectorAll('.slot').forEach(el=>{
+    const slot=ALLSLOTS.find(s=>s.id===el.dataset.slot);
+    let bad=false;
+    if(picked){ bad = team[slot.id] || !eligible(slot,get(picked.type,picked.pid)); }
+    el.classList.toggle('cantdrop', !!bad);
   });
 }
 function assign(sid,pl){
@@ -228,6 +242,7 @@ function renderTray(){
     el.ondragstart=()=>{dragData={type:trayType,pid};};
     el.ondragend=()=>{dragData=null;document.querySelectorAll('.slot').forEach(s=>s.classList.remove('tgt'));};
   });
+  markSlots();
 }
 function updateBoard(){
   const ps=Object.values(team).map(v=>get(v.type,v.pid)).filter(Boolean);
@@ -243,7 +258,7 @@ function render(){renderField();renderTray();}
 function teamPower(map){const ps=Object.values(map).map(v=>get(v.type,v.pid)).filter(Boolean);return ps.reduce((s,p)=>s+p._ovr,0)/ps.length;}
 function randomOpp(){
   const opp={};
-  ALLSLOTS.forEach(s=>{const pool=DATA[s.type].filter(p=>p._ovr>=35);opp[s.id]={type:s.type,pid:pool[Math.floor(Math.random()*pool.length)].pid};});
+  ALLSLOTS.forEach(s=>{let pool=DATA[s.type].filter(p=>eligible(s,p)&&p._ovr>=30);if(!pool.length)pool=DATA[s.type].filter(p=>eligible(s,p));opp[s.id]={type:s.type,pid:pool[Math.floor(Math.random()*pool.length)].pid};});
   return opp;
 }
 document.getElementById('battle').onclick=()=>{
@@ -257,7 +272,7 @@ document.getElementById('battle').onclick=()=>{
     <div class="vsrow"><div class="t"><div class="nm">우리 팀</div><div class="pw" style="color:#6fb4ff">${Math.round(mine)}</div></div>
       <div class="mid">VS</div>
       <div class="t"><div class="nm">상대 팀</div><div class="pw">${Math.round(oppP)}</div></div></div>
-    <div class="pt" style="color:${win?'#ffcf5c':'#ff7a7a'}">잉여력 ${win?'+':''}${delta}  →  ${jae}</div>
+    <div class="pt" style="color:${win?'#ffcf5c':'#ff7a7a'}">포인트 ${win?'+':''}${delta}  →  ${jae}</div>
     <button class="btn ghost" style="margin-top:16px" onclick="document.getElementById('modal').classList.remove('on')">닫기</button>`;
   document.getElementById('modal').classList.add('on');
 };
