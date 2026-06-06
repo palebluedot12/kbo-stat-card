@@ -10,12 +10,18 @@
   body{margin:0;font-family:'Pretendard',-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
     background:radial-gradient(1200px 800px at 50% -10%,#16203a 0%,var(--bg) 60%);color:var(--txt);min-height:100vh;padding:24px 18px 60px}
   h1{font-size:19px;letter-spacing:-.5px;margin:0 0 3px;font-weight:800}
-  .tag{color:var(--sub);font-size:12px;margin-bottom:16px}
-  .dlbtn{background:linear-gradient(160deg,#2b6fff,#1b4fd0);border:none;color:#fff;padding:9px 16px;border-radius:11px;font-size:13px;font-weight:800;cursor:pointer;margin-bottom:18px;box-shadow:0 6px 18px -6px #2b6fff}
-  .dlbtn:hover{filter:brightness(1.08)} .dlbtn:disabled{opacity:.6;cursor:default}
-  .wrap{display:flex;gap:26px;align-items:flex-start;justify-content:center;flex-wrap:wrap;max-width:900px;margin:0 auto}
+  .tag{color:var(--sub);font-size:12px;margin-bottom:14px}
+  .seg{display:inline-flex;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:3px}
+  .seg button{background:none;border:none;color:var(--sub);padding:7px 16px;border-radius:8px;font-size:13px;font-weight:800;cursor:pointer}
+  .seg button.on{background:#2b6fff;color:#fff}
+  .typetoggle{margin-bottom:18px}
+  .typetoggle button{padding:8px 22px;font-size:14px}
 
-  /* CARD */
+  .wrap{display:flex;gap:26px;align-items:flex-start;justify-content:center;flex-wrap:wrap;max-width:900px;margin:0 auto}
+  .leftcol{display:flex;flex-direction:column;align-items:flex-start;gap:10px}
+  .dlbtn{width:42px;height:42px;border-radius:12px;background:linear-gradient(160deg,#2b6fff,#1b4fd0);border:none;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 20px -6px #2b6fff;transition:.15s}
+  .dlbtn:hover{filter:brightness(1.12);transform:translateY(-1px)} .dlbtn:disabled{opacity:.55;cursor:default}
+
   .card{width:344px;border-radius:24px;padding:2px;position:relative;flex-shrink:0;background:linear-gradient(160deg,var(--g1),var(--g2));
     box-shadow:0 30px 70px -25px var(--glow),0 0 0 1px rgba(255,255,255,.04) inset;transition:.45s cubic-bezier(.2,.8,.2,1)}
   .card-inner{background:linear-gradient(165deg,#141b2e 0%,#0c1120 100%);border-radius:22px;padding:20px 22px 22px;position:relative;overflow:hidden}
@@ -32,6 +38,7 @@
   .who .qb{font-size:10px;font-weight:800;padding:3px 8px;border-radius:6px}
   .who .qb.y{background:rgba(43,111,255,.18);color:#7fb0ff}
   .who .qb.n{background:rgba(255,160,60,.16);color:#ffb84d}
+  .who .role{font-size:10px;font-weight:800;padding:3px 8px;border-radius:6px;background:rgba(120,200,140,.15);color:#7fd99a}
   .who .line{font-size:11.5px;color:var(--sub);margin-top:9px;font-weight:600}
   .who .line b{color:var(--txt)}
 
@@ -39,7 +46,6 @@
   svg{display:block;overflow:visible}
   .axis-lbl{font-size:11.5px;font-weight:800;fill:var(--txt)}
   .axis-grade{font-size:9px;font-weight:900}
-
   .stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-top:14px}
   .stat{background:rgba(255,255,255,.035);border:1px solid var(--line);border-radius:11px;padding:8px 5px;text-align:center}
   .stat .k{font-size:9.5px;color:var(--sub);font-weight:700;white-space:nowrap}
@@ -50,16 +56,13 @@
   .ovrnote{margin-top:8px;text-align:center;font-size:9.5px;color:#6c7894;line-height:1.5}
   .brand{margin-top:10px;text-align:center;font-size:11px;font-weight:900;letter-spacing:1px;background:linear-gradient(90deg,var(--g1),var(--g2));-webkit-background-clip:text;background-clip:text;color:transparent}
 
-  /* BROWSER */
   .browser{width:490px;max-width:100%}
-  .seg{display:inline-flex;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:3px;margin-bottom:12px}
-  .seg button{background:none;border:none;color:var(--sub);padding:7px 16px;border-radius:8px;font-size:13px;font-weight:800;cursor:pointer}
-  .seg button.on{background:#2b6fff;color:#fff}
   .search{width:100%;background:var(--panel);border:1px solid var(--line);color:var(--txt);padding:10px 14px;border-radius:11px;font-size:14px;margin-bottom:12px}
-  .teams{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+  .teams{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
   .teams button{background:var(--panel);border:1px solid var(--line);color:var(--sub);padding:6px 11px;border-radius:999px;font-size:12.5px;cursor:pointer;font-weight:700}
   .teams button:hover{color:var(--txt)} .teams button.on{background:#2b6fff;border-color:#2b6fff;color:#fff}
-  .cnt{font-size:11.5px;color:var(--sub);margin-bottom:8px;font-weight:600}
+  .filterrow{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+  .cnt{font-size:11.5px;color:var(--sub);font-weight:600}
   .grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;max-height:600px;overflow-y:auto;padding-right:4px}
   .chip{display:flex;align-items:center;gap:10px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:8px 10px;cursor:pointer;transition:.12s}
   .chip:hover{border-color:#3d4d72;transform:translateY(-1px)} .chip.on{border-color:var(--cg);box-shadow:0 0 0 1px var(--cg)}
@@ -74,65 +77,78 @@
 </head>
 <body>
   <h1>⚾ KBO 선수 레이더 카드</h1>
-  <div class="tag">2026 시즌 · KBO 공식기록 크롤링 · 전체 <b id="cntAll">240</b>명 (규정타석 <b id="cntQ">50</b>명)</div>
-  <button class="dlbtn" id="dl">📷 이 카드 PNG로 저장 (짤 추출)</button>
+  <div class="tag">2026 시즌 · KBO 공식기록 크롤링 · <span id="cntline"></span></div>
+  <div class="seg typetoggle"><button id="thit" class="on">⚾ 타자</button><button id="tpit">🔥 투수</button></div>
 
   <div class="wrap">
-    <div class="card" id="card">
-      <div class="card-inner">
-        <div class="shine"></div>
-        <div class="top">
-          <div class="badge"><div class="lt" id="gl">A</div><div class="ov" id="ov">OVR 0/100</div></div>
-          <img class="photo" id="photo" alt="">
-          <div class="who">
-            <div class="nm" id="nm">선수</div>
-            <div class="chips"><span class="team" id="tm">팀</span><span class="qb y" id="qb">규정</span></div>
-            <div class="line" id="line"></div>
+    <div class="leftcol">
+      <button class="dlbtn" id="dl" title="이 카드 PNG로 저장">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 11l5 5 5-5M5 21h14"/></svg>
+      </button>
+      <div class="card" id="card">
+        <div class="card-inner">
+          <div class="shine"></div>
+          <div class="top">
+            <div class="badge"><div class="lt" id="gl">A</div><div class="ov" id="ov">OVR 0/100</div></div>
+            <img class="photo" id="photo" alt="">
+            <div class="who">
+              <div class="nm" id="nm">선수</div>
+              <div class="chips" id="chips"></div>
+              <div class="line" id="line"></div>
+            </div>
           </div>
+          <div class="radar-wrap"><svg id="radar" width="300" height="248" viewBox="0 0 300 248"></svg></div>
+          <div class="stats" id="tbl"></div>
+          <div class="legend" id="legend"></div>
+          <div class="ovrnote" id="ovrnote"></div>
+          <div class="brand">⚾ KBO 스탯카드 · 2026</div>
         </div>
-        <div class="radar-wrap"><svg id="radar" width="300" height="248" viewBox="0 0 300 248"></svg></div>
-        <div class="stats" id="tbl"></div>
-        <div class="legend" id="legend"></div>
-        <div class="ovrnote">OVR = <b>타격 종합등급</b> (wRC+ 중심 · 리그 백분위 100점 만점) — 수비 미반영</div>
-        <div class="brand">⚾ KBO 스탯카드 · 2026</div>
       </div>
     </div>
 
     <div class="browser">
-      <div class="seg"><button id="mq" class="on">규정타석</button><button id="ma">전체</button></div>
       <input class="search" id="search" placeholder="🔍 선수 이름 검색...">
       <div class="teams" id="teams"></div>
-      <div class="cnt" id="gridcnt"></div>
+      <div class="filterrow">
+        <div class="seg"><button id="ma" class="on">전체</button><button id="mq">규정</button></div>
+        <div class="cnt" id="gridcnt"></div>
+      </div>
       <div class="grid" id="grid"></div>
     </div>
   </div>
 
   <div class="note">
-    등급 기준(OVR/100): <b>S</b> 80↑ · <b>A</b> 68↑ · <b>B</b> 54↑ · <b>C</b> 40↑ · <b>D</b> 26↑ · <b>F</b> 26↓.
-    백분위는 규정타석 타자 분포 기준이라 비규정 선수는 표본이 작아 변동이 큽니다.
-    슬래시라인/wRC+는 KBO 공식기록에서 자체 산출(파크팩터 미적용).
+    등급(OVR/100): <b>S</b> 80↑·<b>A</b> 68↑·<b>B</b> 54↑·<b>C</b> 40↑·<b>D</b> 26↑·<b>F</b> 26↓.
+    백분위는 규정충족 선수 분포 기준(비규정은 표본이 작아 변동 큼). 슬래시라인/wRC+/FIP는 KBO 공식기록에서 자체 산출(파크팩터 미적용).
   </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="data.js"></script>
+<script src="data_pitchers.js"></script>
 <script>
-const P = window.KBO_PLAYERS || [];
-const QUAL = P.filter(p=>p.qual);
-let CUR = P[0];
-const fmt3 = v => (v==null?'-':v.toFixed(3).replace(/^0/,''));
+const DATA={hit:(window.KBO_PLAYERS||[]),pit:(window.KBO_PITCHERS||[])};
+const fmt3=v=>(v==null?'-':v.toFixed(3).replace(/^0/,''));
+const f2=v=>(v==null?'-':v.toFixed(2));
+const f1=v=>(v==null?'-':v.toFixed(1));
 
-// kr=한글개념, ab=약어, ow=OVR가중치(wRC+ 중심 공격등급)
-const AXES = [
-  {kr:"타율",   ab:"AVG",  get:p=>p.AVG,            fmt:fmt3,           ow:1},
-  {kr:"출루",   ab:"OBP",  get:p=>p.OBP,            fmt:fmt3,           ow:1},
-  {kr:"장타",   ab:"SLG",  get:p=>p.SLG,            fmt:fmt3,           ow:1},
-  {kr:"선구안", ab:"BB/K", get:p=>(p.BBK==null?0:p.BBK), fmt:v=>v.toFixed(2), ow:0.5},
-  {kr:"주루",   ab:"SB",   get:p=>p.SB,             fmt:v=>String(v),   ow:0.5},
-  {kr:"생산력", ab:"wRC+", get:p=>p.wRCplus,        fmt:v=>String(v),   ow:6},
+// get=표시값, score=높을수록좋음(백분위용), ow=OVR가중
+const AXES_HIT=[
+  {kr:"타율",  ab:"AVG", get:p=>p.AVG, score:p=>p.AVG, fmt:fmt3, ow:1},
+  {kr:"출루",  ab:"OBP", get:p=>p.OBP, score:p=>p.OBP, fmt:fmt3, ow:1},
+  {kr:"장타",  ab:"SLG", get:p=>p.SLG, score:p=>p.SLG, fmt:fmt3, ow:1},
+  {kr:"선구안",ab:"BB/K",get:p=>(p.BBK==null?0:p.BBK), score:p=>(p.BBK==null?0:p.BBK), fmt:f2, ow:0.5},
+  {kr:"주루",  ab:"SB",  get:p=>p.SB, score:p=>p.SB, fmt:v=>String(v), ow:0.5},
+  {kr:"생산력",ab:"wRC+",get:p=>p.wRCplus, score:p=>p.wRCplus, fmt:v=>String(v), ow:6},
 ];
-// 백분위 기준 = 규정타석 타자 분포
-const SORTED = AXES.map(a=>QUAL.map(a.get).sort((x,y)=>x-y));
-function pct(i,v){const arr=SORTED[i];let c=0;for(const x of arr)if(x<=v)c++;return Math.min(100,c/arr.length*100);}
+const AXES_PIT=[
+  {kr:"평자",  ab:"ERA", get:p=>p.ERA, score:p=>-p.ERA, fmt:f2, ow:1},
+  {kr:"피출루",ab:"WHIP",get:p=>p.WHIP,score:p=>-p.WHIP,fmt:f2, ow:1},
+  {kr:"탈삼진",ab:"K/9", get:p=>p.K9,  score:p=>p.K9,   fmt:f1, ow:1},
+  {kr:"제구",  ab:"BB/9",get:p=>p.BB9, score:p=>-p.BB9, fmt:f1, ow:0.5},
+  {kr:"이닝",  ab:"IP",  get:p=>p.IP,  score:p=>p.IP,   fmt:(v,p)=>p.ipText, ow:0.5},
+  {kr:"종합",  ab:"FIP", get:p=>p.FIP, score:p=>-p.FIP, fmt:f2, ow:6},
+];
+
 function gradeOf(s){
   if(s>=80) return {l:"S",g1:"#ffd86b",g2:"#ff9f1c",glow:"rgba(255,176,32,.55)",c:"#ffcf5c"};
   if(s>=68) return {l:"A",g1:"#c89bff",g2:"#7b3ff2",glow:"rgba(150,80,255,.55)",c:"#c39bff"};
@@ -141,26 +157,31 @@ function gradeOf(s){
   if(s>=26) return {l:"D",g1:"#9aa7c2",g2:"#5b6884",glow:"rgba(120,134,164,.4)",c:"#aab6cf"};
   return            {l:"F",g1:"#7a8499",g2:"#3a4358",glow:"rgba(80,90,110,.4)", c:"#8893ac"};
 }
-P.forEach(p=>{let num=0,w=0;AXES.forEach((a,i)=>{const ww=a.ow;num+=pct(i,a.get(p))*ww;w+=ww;});p._ovr=Math.round(num/w);p._g=gradeOf(p._ovr);});
-
 const CX=150,CY=120,R=78,ang=i=>(-90+i*60)*Math.PI/180;
 const noimg="https://6ptotvmi5753.edge.naverncp.com/KBO_IMAGE/KBOHome/resources/images/common/no-Image.png";
 
+let TYPE='hit',P=[],QUAL=[],AXES=[],SORTED=[],CUR=null;
+let mode='all',curTeam="전체",curName="";
+function pct(i,v){const arr=SORTED[i];let c=0;for(const x of arr)if(x<=v)c++;return Math.min(100,c/arr.length*100);}
+
 function render(p){
-  CUR=p;
-  const vals=AXES.map((a,i)=>{const raw=a.get(p),n=pct(i,raw);return{a,raw,n,g:gradeOf(n)};});
+  if(!p)return; CUR=p;
+  const vals=AXES.map((a,i)=>{const raw=a.get(p),n=pct(i,a.score(p));return{a,raw,n,g:gradeOf(n)};});
   const G=p._g;
   const card=document.getElementById('card');
   card.style.setProperty('--g1',G.g1);card.style.setProperty('--g2',G.g2);card.style.setProperty('--glow',G.glow);
   document.getElementById('gl').textContent=G.l;
   document.getElementById('ov').textContent="OVR "+p._ovr+"/100";
   document.getElementById('nm').textContent=p.name;
-  document.getElementById('tm').textContent=p.team;
-  const qb=document.getElementById('qb');
-  qb.textContent=p.qual?'규정타석':'비규정'; qb.className='qb '+(p.qual?'y':'n');
-  document.getElementById('line').innerHTML=`${p.G}경기 · <b>${p.HR}</b>홈런 · <b>${p.RBI}</b>타점 · OPS <b>${fmt3(p.OPS)}</b>`;
-  const img=document.getElementById('photo');img.src=p.photo;img.style.borderColor=G.g1;
-  img.onerror=()=>{img.onerror=null;img.src=noimg;};
+  const img=document.getElementById('photo');img.src=p.photo;img.style.borderColor=G.g1;img.onerror=()=>{img.onerror=null;img.src=noimg;};
+
+  // chips + line (타입별)
+  let chips=`<span class="team">${p.team}</span>`;
+  if(TYPE==='pit') chips+=`<span class="role">${p.role}</span>`;
+  chips+=`<span class="qb ${p.qual?'y':'n'}">${p.qual?(TYPE==='hit'?'규정타석':'규정이닝'):'비규정'}</span>`;
+  document.getElementById('chips').innerHTML=chips;
+  if(TYPE==='hit') document.getElementById('line').innerHTML=`${p.G}경기 · <b>${p.HR}</b>홈런 · <b>${p.RBI}</b>타점 · OPS <b>${fmt3(p.OPS)}</b>`;
+  else document.getElementById('line').innerHTML=`<b>${p.ipText}</b>이닝 · ${p.W}승 ${p.L}패${p.SV>0?` ${p.SV}세`:''}${p.HLD>0?` ${p.HLD}홀`:''} · ERA <b>${f2(p.ERA)}</b>`;
 
   let s='';
   for(let r=1;r<=5;r++){const rr=R*r/5;let pts='';for(let i=0;i<6;i++)pts+=`${(CX+rr*Math.cos(ang(i))).toFixed(1)},${(CY+rr*Math.sin(ang(i))).toFixed(1)} `;s+=`<polygon points="${pts}" fill="none" stroke="#243049" stroke-width="1"/>`;}
@@ -176,16 +197,17 @@ function render(p){
     s+=`<text x="${lx.toFixed(1)}" y="${(ly+dy+11).toFixed(1)}" text-anchor="${anc}" class="axis-grade" fill="${v.g.c}">${v.g.l}·${Math.round(v.n)}</text>`;
   });
   document.getElementById('radar').innerHTML=s;
-
-  document.getElementById('tbl').innerHTML=vals.map(v=>`<div class="stat"><div class="k">${v.a.ab}(${v.a.kr})</div><div class="v">${v.a.fmt(v.raw)}</div><div class="sg" style="color:${v.g.c}">${v.g.l}</div></div>`).join('');
+  document.getElementById('tbl').innerHTML=vals.map(v=>`<div class="stat"><div class="k">${v.a.ab}(${v.a.kr})</div><div class="v">${v.a.fmt(v.raw,p)}</div><div class="sg" style="color:${v.g.c}">${v.g.l}</div></div>`).join('');
   document.getElementById('legend').innerHTML=['S','A','B','C','D','F'].map(L=>{const g=gradeOf(L=='S'?85:L=='A'?72:L=='B'?60:L=='C'?46:L=='D'?32:10);return `<span style="color:${g.c}">${L}</span>`;}).join('');
+  document.getElementById('ovrnote').innerHTML=TYPE==='hit'
+    ? 'OVR = <b>타격 종합등급</b> (wRC+ 중심 · 리그 백분위 100점) — 수비 미반영'
+    : 'OVR = <b>투구 종합등급</b> (FIP 중심 · 리그 백분위 100점) — 수비무관 지표';
   document.querySelectorAll('.chip').forEach(ch=>ch.classList.toggle('on',+ch.dataset.i===P.indexOf(p)));
 }
 
 // ===== BROWSER =====
-const TEAM_ORDER=[...new Set(P.map(p=>p.team))];
-let mode='qual', curTeam="전체", curName="";
 const grid=document.getElementById('grid');
+let TEAM_ORDER=[];
 function pool(){return mode==='qual'?QUAL:P;}
 function buildTeams(){
   const box=document.getElementById('teams');box.innerHTML='';
@@ -195,33 +217,45 @@ function buildGrid(){
   const list=pool().map(p=>({p,i:P.indexOf(p)}))
     .filter(o=>(curTeam==="전체"||o.p.team===curTeam)&&(!curName||o.p.name.includes(curName)))
     .sort((a,b)=>b.p._ovr-a.p._ovr);
-  document.getElementById('gridcnt').textContent=`${list.length}명 표시`;
-  grid.innerHTML=list.map(o=>`
-    <div class="chip" data-i="${o.i}" style="--cg:${o.p._g.c}">
+  document.getElementById('gridcnt').textContent=`${list.length}명`;
+  grid.innerHTML=list.map(o=>{
+    const sub=TYPE==='hit'?`${o.p.team} · ${fmt3(o.p.AVG)} · OPS ${fmt3(o.p.OPS)}`:`${o.p.team} · ERA ${f2(o.p.ERA)} · ${o.p.role}`;
+    return `<div class="chip" data-i="${o.i}" style="--cg:${o.p._g.c}">
       <img src="${o.p.photo}" onerror="this.onerror=null;this.src='${noimg}'">
-      <div class="ci"><div class="cn">${o.p.name}${o.p.qual?'':' <span style="color:#ffb84d;font-size:9px">비규정</span>'}</div><div class="ct">${o.p.team} · ${fmt3(o.p.AVG)} · OPS ${fmt3(o.p.OPS)}</div></div>
-      <div class="cg" style="background:linear-gradient(160deg,${o.p._g.g1},${o.p._g.g2})">${o.p._g.l}</div>
-    </div>`).join('')||`<div style="color:#6c7894;font-size:13px;padding:10px">결과 없음</div>`;
+      <div class="ci"><div class="cn">${o.p.name}${o.p.qual?'':' <span style="color:#ffb84d;font-size:9px">비규정</span>'}</div><div class="ct">${sub}</div></div>
+      <div class="cg" style="background:linear-gradient(160deg,${o.p._g.g1},${o.p._g.g2})">${o.p._g.l}</div></div>`;
+  }).join('')||`<div style="color:#6c7894;font-size:13px;padding:10px">결과 없음</div>`;
   grid.querySelectorAll('.chip').forEach(ch=>ch.onclick=()=>render(P[+ch.dataset.i]));
 }
-document.getElementById('mq').onclick=()=>{mode='qual';document.getElementById('mq').classList.add('on');document.getElementById('ma').classList.remove('on');buildGrid();};
-document.getElementById('ma').onclick=()=>{mode='all';document.getElementById('ma').classList.add('on');document.getElementById('mq').classList.remove('on');buildGrid();};
-document.getElementById('search').oninput=e=>{curName=e.target.value.trim();buildGrid();};
-document.getElementById('cntAll').textContent=P.length;
-document.getElementById('cntQ').textContent=QUAL.length;
 
-// ===== PNG 저장 (고해상도) =====
+function setType(t){
+  TYPE=t;P=DATA[t];QUAL=P.filter(p=>p.qual);AXES=(t==='hit')?AXES_HIT:AXES_PIT;
+  SORTED=AXES.map(a=>QUAL.map(a.score).sort((x,y)=>x-y));
+  P.forEach(p=>{let num=0,w=0;AXES.forEach((a,i)=>{num+=pct(i,a.score(p))*a.ow;w+=a.ow;});p._ovr=Math.round(num/w);p._g=gradeOf(p._ovr);});
+  TEAM_ORDER=[...new Set(P.map(p=>p.team))];
+  curTeam="전체";curName="";document.getElementById('search').value="";
+  document.getElementById('mq').textContent=(t==='hit')?'규정타석':'규정이닝';
+  document.getElementById('cntline').innerHTML=`전체 <b>${P.length}</b>명 · ${(t==='hit')?'규정타석':'규정이닝'} <b>${QUAL.length}</b>명`;
+  document.getElementById('thit').classList.toggle('on',t==='hit');
+  document.getElementById('tpit').classList.toggle('on',t==='pit');
+  buildTeams();buildGrid();render(pool()[0]);
+}
+document.getElementById('thit').onclick=()=>setType('hit');
+document.getElementById('tpit').onclick=()=>setType('pit');
+document.getElementById('ma').onclick=()=>{mode='all';document.getElementById('ma').classList.add('on');document.getElementById('mq').classList.remove('on');buildGrid();};
+document.getElementById('mq').onclick=()=>{mode='qual';document.getElementById('mq').classList.add('on');document.getElementById('ma').classList.remove('on');buildGrid();};
+document.getElementById('search').oninput=e=>{curName=e.target.value.trim();buildGrid();};
+
 document.getElementById('dl').onclick=function(){
   const btn=this,card=document.getElementById('card');
   if(typeof html2canvas==='undefined'){alert('이미지 라이브러리 로드 실패 (인터넷 확인)');return;}
-  btn.disabled=true;const old=btn.textContent;btn.textContent='⏳ 생성 중...';
+  btn.disabled=true;
   html2canvas(card,{backgroundColor:null,scale:Math.max(3,(window.devicePixelRatio||1)*2),useCORS:true,logging:false}).then(cv=>{
-    const a=document.createElement('a');a.download=`${CUR.name}_${CUR.team}_KBO카드.png`;a.href=cv.toDataURL('image/png');a.click();
-    btn.disabled=false;btn.textContent=old;
-  }).catch(err=>{alert('생성 실패: '+err.message);btn.disabled=false;btn.textContent=old;});
+    const a=document.createElement('a');a.download=`${CUR.name}_${CUR.team}_KBO카드.png`;a.href=cv.toDataURL('image/png');a.click();btn.disabled=false;
+  }).catch(err=>{alert('생성 실패: '+err.message);btn.disabled=false;});
 };
 
-buildTeams();buildGrid();render(QUAL[0]);
+setType('hit');
 </script>
 </body>
 </html>
