@@ -26,10 +26,8 @@
 
   /* 야구장 */
   .left{width:560px;max-width:100%}
-  .field{position:relative;width:100%;padding-bottom:78%;border-radius:18px;overflow:hidden;
-    background:radial-gradient(120% 90% at 50% 105%,#2f7d43 0%,#246036 55%,#1c4d2c 100%);border:1px solid #2a4a30}
-  .field::before{content:"";position:absolute;left:50%;top:60%;width:48%;height:48%;transform:translate(-50%,-50%) rotate(45deg);
-    background:linear-gradient(#b6824a,#9c6b3a);border-radius:8px;box-shadow:inset 0 0 0 2px rgba(255,255,255,.18)}
+  .field{position:relative;width:100%;padding-bottom:92%;border-radius:18px;overflow:hidden;background:#0b1020;border:1px solid #2a3550}
+  .field svg.fld{position:absolute;inset:0;width:100%;height:100%}
   .slot{position:absolute;transform:translate(-50%,-50%);width:64px;display:flex;flex-direction:column;align-items:center;cursor:pointer;z-index:2}
   .slot .box{width:54px;height:62px;border-radius:11px;border:2px dashed rgba(255,255,255,.45);background:rgba(0,0,0,.28);
     display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative;transition:.15s}
@@ -145,11 +143,30 @@ const get=(t,pid)=>DATA[t].find(p=>p.pid===pid);
 
 // ===== 슬롯 =====
 const SLOTS=[
-  {id:'CF',label:'중견',type:'hit',x:50,y:11},{id:'LF',label:'좌익',type:'hit',x:18,y:24},{id:'RF',label:'우익',type:'hit',x:82,y:24},
-  {id:'SS',label:'유격',type:'hit',x:35,y:45},{id:'2B',label:'2루',type:'hit',x:65,y:45},
-  {id:'3B',label:'3루',type:'hit',x:15,y:60},{id:'1B',label:'1루',type:'hit',x:85,y:60},
-  {id:'SP',label:'선발',type:'pit',x:50,y:58},{id:'C',label:'포수',type:'hit',x:50,y:86},
+  {id:'CF',label:'중견',type:'hit',x:50,y:15},{id:'LF',label:'좌익',type:'hit',x:23,y:27},{id:'RF',label:'우익',type:'hit',x:77,y:27},
+  {id:'SS',label:'유격',type:'hit',x:37,y:49},{id:'2B',label:'2루',type:'hit',x:63,y:49},
+  {id:'3B',label:'3루',type:'hit',x:23,y:63},{id:'1B',label:'1루',type:'hit',x:77,y:63},
+  {id:'SP',label:'선발',type:'pit',x:50,y:65},{id:'C',label:'포수',type:'hit',x:50,y:89},
 ];
+const FIELD_SVG=`<svg class="fld" viewBox="0 0 500 460" preserveAspectRatio="xMidYMid meet">
+  <defs><linearGradient id="gg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4bb061"/><stop offset="1" stop-color="#2f8545"/></linearGradient></defs>
+  <path d="M250 424 L56 116 A 250 250 0 0 1 444 116 Z" fill="url(#gg)"/>
+  <path d="M250 424 L118 216 A 168 168 0 0 1 382 216 Z" fill="#43a558" opacity="0.6"/>
+  <path d="M250 424 L172 296 A 96 96 0 0 1 328 296 Z" fill="#4aab5f" opacity="0.55"/>
+  <line x1="250" y1="406" x2="64" y2="124" stroke="#ffffff" stroke-width="3" opacity="0.8"/>
+  <line x1="250" y1="406" x2="436" y2="124" stroke="#ffffff" stroke-width="3" opacity="0.8"/>
+  <path d="M250 406 L364 300 L250 194 L136 300 Z" fill="#d9a25d" stroke="#c98f49" stroke-width="2" stroke-linejoin="round"/>
+  <circle cx="250" cy="404" r="40" fill="#d9a25d"/>
+  <path d="M250 384 L341 300 L250 216 L159 300 Z" fill="#46a85b"/>
+  <g fill="#ffffff" stroke="#e2e2e2" stroke-width="1.5">
+    <rect x="343" y="293" width="14" height="14" transform="rotate(45 350 300)"/>
+    <rect x="243" y="193" width="14" height="14" transform="rotate(45 250 200)"/>
+    <rect x="143" y="293" width="14" height="14" transform="rotate(45 150 300)"/>
+  </g>
+  <polygon points="242,398 258,398 258,407 250,414 242,407" fill="#ffffff"/>
+  <circle cx="250" cy="300" r="23" fill="#d9a25d"/>
+  <rect x="245" y="297" width="10" height="5" rx="1.5" fill="#ffffff"/>
+</svg>`;
 const BENCH=[{id:'DH',label:'지명타자',type:'hit'},{id:'CP',label:'마무리',type:'pit'}];
 const ALLSLOTS=[...SLOTS,...BENCH];
 
@@ -169,7 +186,7 @@ function slotHTML(s){
 }
 function renderField(){
   const f=document.getElementById('field');
-  f.innerHTML=SLOTS.map(s=>`<div class="slot ${team[s.id]?'filled':''}" data-slot="${s.id}" style="left:${s.x}%;top:${s.y}%">${slotHTML(s)}</div>`).join('');
+  f.innerHTML=FIELD_SVG+SLOTS.map(s=>`<div class="slot ${team[s.id]?'filled':''}" data-slot="${s.id}" style="left:${s.x}%;top:${s.y}%">${slotHTML(s)}</div>`).join('');
   document.getElementById('bench').innerHTML=BENCH.map(s=>`<div class="slot ${team[s.id]?'filled':''}" data-slot="${s.id}">${slotHTML(s)}</div>`).join('');
   bindSlots();
   updateBoard();
