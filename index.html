@@ -131,17 +131,17 @@ const fmt3=v=>(v==null?'-':v.toFixed(3).replace(/^0/,''));
 const f2=v=>(v==null?'-':v.toFixed(2));
 const f1=v=>(v==null?'-':v.toFixed(1));
 
-// ===== Simple WAR (FIP+ → 피타고리안 승률 → WAR) =====
+// ===== Simple WAR (ERA+ → 피타고리안 승률 → WAR) · 현재 실점 기준 =====
 (function(){
   const pit=DATA.pit; if(!pit.length)return;
-  let sf=0,sip=0; pit.forEach(p=>{sf+=p.FIP*p.IP;sip+=p.IP;});
-  const lgFIP=sf/sip;
+  let se=0,sip=0; pit.forEach(p=>{se+=p.ERA*p.IP;sip+=p.IP;});
+  const lgERA=se/sip;                                          // IP가중 = 리그 평균자책
   pit.forEach(p=>{
-    const fip=Math.max(0.1,p.FIP);
-    const fp=lgFIP/fip*100;                                   // FIP+ (100=리그평균, 높을수록 좋음)
-    const wp=Math.pow(fp,1.8)/(Math.pow(fp,1.8)+Math.pow(100,1.8)); // 피타고리안 기대승률(지수 1.8)
-    p.FIPplus=Math.round(fp);
-    p.WAR=Math.round(((wp-0.38)/9*p.IP)*100)/100;             // (W%-.380)/9 × 이닝
+    const era=Math.max(0.5,p.ERA);
+    const ep=lgERA/era*100;                                    // ERA+ (100=리그평균, 높을수록 좋음)
+    const wp=Math.pow(ep,1.8)/(Math.pow(ep,1.8)+Math.pow(100,1.8)); // 피타고리안 기대승률(지수 1.8)
+    p.ERAplus=Math.round(ep);
+    p.WAR=Math.round(((wp-0.38)/9*p.IP)*100)/100;              // (W%-.380)/9 × 이닝
   });
 })();
 
@@ -237,7 +237,7 @@ function render(p){
   document.getElementById('legend').innerHTML=['S','A','B','C','D','F'].map(L=>{const g=gradeOf(L=='S'?85:L=='A'?72:L=='B'?60:L=='C'?46:L=='D'?32:10);return `<span style="color:${g.c}">${L}</span>`;}).join('');
   document.getElementById('ovrnote').innerHTML=TYPE==='hit'
     ? 'OVR = <b>타격 종합등급</b> (wRC+ 중심 · 리그 백분위 100점) — 수비 미반영'
-    : 'OVR = <b>Simple WAR 백분위</b> (역할 내 · FIP+ 피타고리안 기반) — 수비무관';
+    : 'OVR = <b>Simple WAR 백분위</b> (역할 내 · ERA+ 피타고리안 기반) — 현재 실점 기준';
   document.querySelectorAll('.chip').forEach(ch=>ch.classList.toggle('on',+ch.dataset.i===P.indexOf(p)));
 }
 
