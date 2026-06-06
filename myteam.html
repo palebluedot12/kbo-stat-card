@@ -119,8 +119,8 @@
 <script>
 const DATA={hit:(window.KBO_PLAYERS||[]),pit:(window.KBO_PITCHERS||[])};
 // 포지션 부여 (포수/내야/외야 = positions.js, 투수 = 전부 '투수')
-DATA.hit.forEach(p=>{p.pos=(window.KBO_POS&&window.KBO_POS[p.pid])||'내야';});
-DATA.pit.forEach(p=>{p.pos='투수';});
+DATA.hit.forEach(p=>{p.pos=(window.KBO_POS&&window.KBO_POS[p.pid])||'내야';p.type='hit';});
+DATA.pit.forEach(p=>{p.pos='투수';p.type='pit';});
 const POSKR={'내야':'내야수','외야':'외야수','포수':'포수','투수':'투수'};
 function gradeOf(s){
   if(s>=80) return {l:"S",g1:"#ffd86b",g2:"#ff9f1c",c:"#ffcf5c"};
