@@ -110,7 +110,7 @@
       <input class="search" id="search" placeholder="🔍 선수 이름 검색...">
       <div class="teams" id="teams"></div>
       <div class="filterrow">
-        <div class="seg"><button id="ma" class="on">전체</button><button id="mq">규정</button></div>
+        <div class="seg" id="seg"></div>
         <div class="cnt" id="gridcnt"></div>
       </div>
       <div class="grid" id="grid"></div>
@@ -119,7 +119,7 @@
 
   <div class="note">
     등급(OVR/100): <b>S</b> 80↑·<b>A</b> 68↑·<b>B</b> 54↑·<b>C</b> 40↑·<b>D</b> 26↑·<b>F</b> 26↓.
-    백분위는 규정충족 선수 분포 기준(비규정은 표본이 작아 변동 큼). 슬래시라인/wRC+/FIP는 KBO 공식기록에서 자체 산출(파크팩터 미적용).
+    백분위는 <b>동일 그룹</b> 분포 기준(타자=규정타석 / 투수=선발·구원 각 역할끼리). 슬래시라인/wRC+/FIP는 KBO 공식기록에서 자체 산출(파크팩터 미적용).
   </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -160,13 +160,31 @@ function gradeOf(s){
 const CX=150,CY=120,R=78,ang=i=>(-90+i*60)*Math.PI/180;
 const noimg="https://6ptotvmi5753.edge.naverncp.com/KBO_IMAGE/KBOHome/resources/images/common/no-Image.png";
 
-let TYPE='hit',P=[],QUAL=[],AXES=[],SORTED=[],CUR=null;
+let TYPE='hit',P=[],QUAL=[],AXES=[],BASELINES={},CUR=null;
 let mode='all',curTeam="전체",curName="";
-function pct(i,v){const arr=SORTED[i];let c=0;for(const x of arr)if(x<=v)c++;return Math.min(100,c/arr.length*100);}
+// 투수 역할별 표본 충족 기준
+function enoughSample(p){
+  if(TYPE==='hit') return p.qual;
+  return (p.role==='선발'&&p.qual)||(p.role==='구원'&&p.IP>=20);
+}
+function keyOf(p){ return TYPE==='hit'?'hit':p.role; }
+function buildBaselines(){
+  BASELINES={};
+  if(TYPE==='hit'){
+    BASELINES['hit']=AXES.map(a=>QUAL.map(a.score).sort((x,y)=>x-y));
+  }else{
+    const sp=P.filter(p=>p.role==='선발'&&p.qual);   // 규정이닝 선발
+    const rp=P.filter(p=>p.role==='구원'&&p.IP>=20);  // 20이닝↑ 구원
+    BASELINES['선발']=AXES.map(a=>sp.map(a.score).sort((x,y)=>x-y));
+    BASELINES['구원']=AXES.map(a=>rp.map(a.score).sort((x,y)=>x-y));
+  }
+}
+function pct(i,v,key){const arr=BASELINES[key]&&BASELINES[key][i];if(!arr||arr.length===0)return 50;let c=0;for(const x of arr)if(x<=v)c++;return Math.min(100,c/arr.length*100);}
 
 function render(p){
   if(!p)return; CUR=p;
-  const vals=AXES.map((a,i)=>{const raw=a.get(p),n=pct(i,a.score(p));return{a,raw,n,g:gradeOf(n)};});
+  const key=keyOf(p);
+  const vals=AXES.map((a,i)=>{const raw=a.get(p),n=pct(i,a.score(p),key);return{a,raw,n,g:gradeOf(n)};});
   const G=p._g;
   const card=document.getElementById('card');
   card.style.setProperty('--g1',G.g1);card.style.setProperty('--g2',G.g2);card.style.setProperty('--glow',G.glow);
@@ -177,8 +195,12 @@ function render(p){
 
   // chips + line (타입별)
   let chips=`<span class="team">${p.team}</span>`;
-  if(TYPE==='pit') chips+=`<span class="role">${p.role}</span>`;
-  chips+=`<span class="qb ${p.qual?'y':'n'}">${p.qual?(TYPE==='hit'?'규정타석':'규정이닝'):'비규정'}</span>`;
+  if(TYPE==='pit'){
+    chips+=`<span class="role">${p.role}</span>`;
+    if(!enoughSample(p)) chips+=`<span class="qb n">표본 적음</span>`;
+  }else{
+    chips+=`<span class="qb ${p.qual?'y':'n'}">${p.qual?'규정타석':'비규정'}</span>`;
+  }
   document.getElementById('chips').innerHTML=chips;
   if(TYPE==='hit') document.getElementById('line').innerHTML=`${p.G}경기 · <b>${p.HR}</b>홈런 · <b>${p.RBI}</b>타점 · OPS <b>${fmt3(p.OPS)}</b>`;
   else document.getElementById('line').innerHTML=`<b>${p.ipText}</b>이닝 · ${p.W}승 ${p.L}패${p.SV>0?` ${p.SV}세`:''}${p.HLD>0?` ${p.HLD}홀`:''} · ERA <b>${f2(p.ERA)}</b>`;
@@ -208,7 +230,17 @@ function render(p){
 // ===== BROWSER =====
 const grid=document.getElementById('grid');
 let TEAM_ORDER=[];
-function pool(){return mode==='qual'?QUAL:P;}
+function pool(){
+  if(TYPE==='hit') return mode==='qual'?QUAL:P;
+  if(mode==='sp') return P.filter(p=>p.role==='선발');
+  if(mode==='rp') return P.filter(p=>p.role==='구원');
+  return P;
+}
+function buildSeg(){
+  const seg=document.getElementById('seg');seg.innerHTML='';
+  const opts=TYPE==='hit'?[['all','전체'],['qual','규정타석']]:[['all','전체'],['sp','선발'],['rp','구원']];
+  opts.forEach(o=>{const b=document.createElement('button');b.textContent=o[1];if(o[0]===mode)b.classList.add('on');b.onclick=()=>{mode=o[0];buildSeg();buildGrid();};seg.appendChild(b);});
+}
 function buildTeams(){
   const box=document.getElementById('teams');box.innerHTML='';
   ['전체',...TEAM_ORDER].forEach(t=>{const b=document.createElement('button');b.textContent=t;if(t===curTeam)b.classList.add('on');b.onclick=()=>{curTeam=t;buildTeams();buildGrid();};box.appendChild(b);});
@@ -229,21 +261,23 @@ function buildGrid(){
 }
 
 function setType(t){
-  TYPE=t;P=DATA[t];QUAL=P.filter(p=>p.qual);AXES=(t==='hit')?AXES_HIT:AXES_PIT;
-  SORTED=AXES.map(a=>QUAL.map(a.score).sort((x,y)=>x-y));
-  P.forEach(p=>{let num=0,w=0;AXES.forEach((a,i)=>{num+=pct(i,a.score(p))*a.ow;w+=a.ow;});p._ovr=Math.round(num/w);p._g=gradeOf(p._ovr);});
+  TYPE=t;P=DATA[t];QUAL=P.filter(p=>p.qual);AXES=(t==='hit')?AXES_HIT:AXES_PIT;mode='all';
+  buildBaselines();
+  P.forEach(p=>{let num=0,w=0;const key=keyOf(p);AXES.forEach((a,i)=>{num+=pct(i,a.score(p),key)*a.ow;w+=a.ow;});p._ovr=Math.round(num/w);p._g=gradeOf(p._ovr);});
   TEAM_ORDER=[...new Set(P.map(p=>p.team))];
   curTeam="전체";curName="";document.getElementById('search').value="";
-  document.getElementById('mq').textContent=(t==='hit')?'규정타석':'규정이닝';
-  document.getElementById('cntline').innerHTML=`전체 <b>${P.length}</b>명 · ${(t==='hit')?'규정타석':'규정이닝'} <b>${QUAL.length}</b>명`;
+  if(t==='hit'){
+    document.getElementById('cntline').innerHTML=`전체 <b>${P.length}</b>명 · 규정타석 <b>${QUAL.length}</b>명`;
+  }else{
+    const sp=P.filter(p=>p.role==='선발').length,rp=P.filter(p=>p.role==='구원').length;
+    document.getElementById('cntline').innerHTML=`전체 <b>${P.length}</b>명 · 선발 <b>${sp}</b> · 구원 <b>${rp}</b>`;
+  }
   document.getElementById('thit').classList.toggle('on',t==='hit');
   document.getElementById('tpit').classList.toggle('on',t==='pit');
-  buildTeams();buildGrid();render(pool()[0]);
+  buildSeg();buildTeams();buildGrid();render(pool()[0]);
 }
 document.getElementById('thit').onclick=()=>setType('hit');
 document.getElementById('tpit').onclick=()=>setType('pit');
-document.getElementById('ma').onclick=()=>{mode='all';document.getElementById('ma').classList.add('on');document.getElementById('mq').classList.remove('on');buildGrid();};
-document.getElementById('mq').onclick=()=>{mode='qual';document.getElementById('mq').classList.add('on');document.getElementById('ma').classList.remove('on');buildGrid();};
 document.getElementById('search').oninput=e=>{curName=e.target.value.trim();buildGrid();};
 
 document.getElementById('dl').onclick=function(){
