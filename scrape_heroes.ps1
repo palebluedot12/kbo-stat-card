@@ -7,6 +7,13 @@ function J($url){ (Invoke-WebRequest -Uri $url -UseBasicParsing -TimeoutSec 20 -
 $PHOTO="https://6ptotvmi5753.edge.naverncp.com/KBO_IMAGE/person/middle/2026/"
 $wc=New-Object System.Net.WebClient
 
+# RE24 표 (KBO 보정) + REa 계산용
+$RE=@{}
+$RE["000_0"]=0.53;$RE["100_0"]=0.96;$RE["010_0"]=1.22;$RE["001_0"]=1.44;$RE["110_0"]=1.55;$RE["101_0"]=1.75;$RE["011_0"]=2.05;$RE["111_0"]=2.40
+$RE["000_1"]=0.28;$RE["100_1"]=0.57;$RE["010_1"]=0.77;$RE["001_1"]=1.14;$RE["110_1"]=0.96;$RE["101_1"]=1.27;$RE["011_1"]=1.45;$RE["111_1"]=1.65
+$RE["000_2"]=0.11;$RE["100_2"]=0.23;$RE["010_2"]=0.34;$RE["001_2"]=0.38;$RE["110_2"]=0.48;$RE["101_2"]=0.52;$RE["011_2"]=0.61;$RE["111_2"]=0.80
+function REof($b1,$b2,$b3,$o){ if([int]$o -ge 3){return 0.0}; [double]$RE["$b1$b2$b3`_$o"] }
+
 $games = (J "https://api-gw.sports.naver.com/schedule/games?fields=basic&upperCategoryId=kbaseball&categoryId=kbo&fromDate=$Date&toDate=$Date&size=30").result.games
 Write-Host "[$Date] 경기 $($games.Count)개"
 
@@ -31,27 +38,46 @@ foreach($g in $games){
     }
   }
 
-  $wpa=@{}
+  $wpa=@{}; $pas=@()
   foreach($inn in 1..15){
     try{ $rd=(J "https://api-gw.sports.naver.com/schedule/games/$gid/relay?inning=$inn").result.textRelayData }catch{ continue }
     if(-not $rd.textRelays){ continue }
     foreach($e in $rd.textRelays){
-      if($e.metricOption -and $e.textOptions[0].type -eq 8){
-        $w=[double]$e.metricOption.wpaByPlate
+      if($e.textOptions[0].type -eq 8){
         $gs=$e.textOptions[0].currentGameState
         $bp=[string]$gs.batter; $pp=[string]$gs.pitcher
-        if($bp){ $wpa[$bp]=[math]::Round(($wpa[$bp]+$w),2) }
-        if($pp){ $wpa[$pp]=[math]::Round(($wpa[$pp]-$w),2) }
+        $w=if($e.metricOption){[double]$e.metricOption.wpaByPlate}else{0}
+        if($e.metricOption){ if($bp){$wpa[$bp]=[double]$wpa[$bp]+$w}; if($pp){$wpa[$pp]=[double]$wpa[$pp]-$w} }
+        $sc=if($e.homeOrAway -eq '1'){[int]$gs.homeScore}else{[int]$gs.awayScore}
+        $pas += [pscustomobject]@{ no=[int]$e.no; inn=[int]$e.inn; ha=[string]$e.homeOrAway
+          b1=([int]($gs.base1 -ne '0' -and $gs.base1 -ne '')); b2=([int]($gs.base2 -ne '0' -and $gs.base2 -ne '')); b3=([int]($gs.base3 -ne '0' -and $gs.base3 -ne '')); o=[int]$gs.out
+          bsc=$sc; bat=$bp; pit=$pp }
         $pbp += [pscustomobject]@{ gid=$gid; inn=$e.inn; ha=$e.homeOrAway; hs=$gs.homeScore; as=$gs.awayScore; o=$gs.out; b1=$gs.base1; b2=$gs.base2; b3=$gs.base3; bat=$bp; pit=$pp; wpa=$w }
       }
     }
     Start-Sleep -Milliseconds 100
   }
 
-  $ranked = $wpa.GetEnumerator() | Where-Object { $meta.ContainsKey($_.Key) } | Sort-Object Value -Descending
+  # REa (RE24 자체계산)
+  $rea=@{}
+  $pasS=@($pas|Sort-Object no)
+  foreach($team in '0','1'){
+    $seq=@($pasS|Where-Object{$_.ha -eq $team})
+    $final=if($team -eq '1'){[int]$g.homeTeamScore}else{[int]$g.awayTeamScore}
+    for($i=0;$i -lt $seq.Count;$i++){
+      $p=$seq[$i]; $before=REof $p.b1 $p.b2 $p.b3 $p.o
+      if($i -lt $seq.Count-1){ $n=$seq[$i+1]; $runs=$n.bsc-$p.bsc; $after=if($n.inn -eq $p.inn){REof $n.b1 $n.b2 $n.b3 $n.o}else{0.0} }
+      else{ $runs=$final-$p.bsc; $after=0.0 }
+      $v=$after+$runs-$before
+      if($p.bat){ $rea[$p.bat]=[double]$rea[$p.bat]+$v }
+      if($p.pit){ $rea[$p.pit]=[double]$rea[$p.pit]-$v }
+    }
+  }
+
+  $ranked = $rea.GetEnumerator() | Where-Object { $meta.ContainsKey($_.Key) } | Sort-Object Value -Descending
   function Card($kv){
     $m=$meta[$kv.Key]
-    $card=[pscustomobject]@{ name=$m.name; team=$m.team; kind=$m.kind; wpa=[math]::Round($kv.Value/100,3); line=$m.line; pid=$kv.Key; photo=($PHOTO+$kv.Key+".jpg") }
+    $card=[pscustomobject]@{ name=$m.name; team=$m.team; kind=$m.kind; rea=[math]::Round($kv.Value,2); wpa=[math]::Round([double]$wpa[$kv.Key]/100,3); line=$m.line; pid=$kv.Key; photo=($PHOTO+$kv.Key+".jpg") }
     try{ $b=$wc.DownloadData($card.photo); if($b.Length -gt 800){ $card.photo="data:image/jpeg;base64,"+[Convert]::ToBase64String($b) } }catch{}
     return $card
   }
@@ -74,7 +100,7 @@ $root = if($PSScriptRoot){$PSScriptRoot}else{"H:\KBOWEB"}
 Write-Host ""
 foreach($go in $gamesOut){
   Write-Host "=== $($go.away) $($go.awayScore) : $($go.homeScore) $($go.home) ==="
-  $go.best | ForEach-Object { "  BEST {0} {1}({2}) WPA {3} | {4}" -f $_.name,$_.team,$_.kind,$_.wpa,$_.line }
-  "  WORST {0} {1}({2}) WPA {3} | {4}" -f $go.worst.name,$go.worst.team,$go.worst.kind,$go.worst.wpa,$go.worst.line
+  $go.best | ForEach-Object { "  BEST {0} {1}({2}) REa {3} (WPA {4}) | {5}" -f $_.name,$_.team,$_.kind,$_.rea,$_.wpa,$_.line }
+  "  WORST {0} {1}({2}) REa {3} | {4}" -f $go.worst.name,$go.worst.team,$go.worst.kind,$go.worst.rea,$go.worst.line
 }
 Write-Host "PBP: $($pbp.Count) 타석"

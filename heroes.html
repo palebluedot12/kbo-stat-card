@@ -79,12 +79,12 @@ const noimg="https://6ptotvmi5753.edge.naverncp.com/KBO_IMAGE/KBOHome/resources/
 const medals=['🥇','🥈','🥉'];
 function fmtDate(s){const[y,m,d]=s.split('-');const wd=['일','월','화','수','목','금','토'][new Date(s+'T00:00:00').getDay()];return `${y}.${m}.${d} (${wd})`;}
 function prow(p,i,worst){
-  const sign=p.wpa>=0?'+':'';
+  const v=(p.rea==null?0:p.rea); const sign=v>=0?'+':'';
   return `<div class="row ${worst?'wst':'r'+(i+1)}">
     <div class="medal">${worst?'😵':medals[i]}</div>
     <img class="ph" src="${p.photo}" onerror="this.onerror=null;this.src='${noimg}'">
     <div class="info"><div class="nm">${p.name}</div><div class="meta">${p.team} · ${p.kind}</div><div class="line">${p.line}</div></div>
-    <div class="wpa"><div class="v">${sign}${p.wpa.toFixed(2)}</div><div class="l">WPA</div></div>
+    <div class="wpa"><div class="v">${sign}${v.toFixed(2)}</div><div class="l">REa</div></div>
   </div>`;
 }
 function gameCard(g,idx){
@@ -106,14 +106,14 @@ function gameCard(g,idx){
         ${g.best.map((p,i)=>prow(p,i,false)).join('')}
         <div class="sect w">WORST</div>
         ${prow(g.worst,0,true)}
-        <div class="foot"><div class="brand">⚾ KBO 스탯카드</div><div class="note">WPA = 승리확률 기여도<br>kbo-stat-card.vercel.app</div></div>
+        <div class="foot"><div class="brand">⚾ KBO 스탯카드</div><div class="note">REa = 득점 기여(상황 반영)<br>kbo-stat-card.vercel.app</div></div>
       </div>
     </div>
   </div>`;
 }
 if(!D||!D.games||!D.games.length){document.getElementById('grid').innerHTML='<div class="empty">아직 종료된 경기가 없습니다</div>';}
 else{
-  document.getElementById('datetag').textContent=`${fmtDate(D.date)} · 경기별 승리확률 기여(WPA) 기준 · ${D.games.length}경기`;
+  document.getElementById('datetag').textContent=`${fmtDate(D.date)} · 경기별 득점 기여(REa) 기준 · ${D.games.length}경기`;
   document.getElementById('grid').innerHTML=D.games.map((g,i)=>gameCard(g,i)).join('');
   document.querySelectorAll('.dlbtn').forEach(btn=>{
     btn.onclick=()=>{
