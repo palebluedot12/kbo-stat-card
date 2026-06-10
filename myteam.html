@@ -18,12 +18,25 @@
   .tag b{color:#ffcf5c}
   .wrap{max-width:920px;margin:0 auto;display:flex;gap:22px;flex-wrap:wrap;justify-content:center;align-items:flex-start}
 
+  .budget{max-width:560px;margin:0 auto 10px;background:linear-gradient(160deg,#1c2540,#11172b);border:1px solid #34406a;border-radius:16px;padding:14px 20px}
+  .budget .bl{font-size:12px;color:var(--sub);font-weight:800;display:flex;justify-content:space-between}
+  .budget .bv{font-size:40px;font-weight:900;letter-spacing:-1.5px;color:#ffcf5c;line-height:1.05}
+  .budget .bv small{font-size:18px;color:var(--sub);font-weight:800}
+  .budget.over .bv{color:#ff7a7a}
+  .bar{height:9px;background:#0a0e1a;border-radius:6px;margin-top:10px;overflow:hidden}
+  .barfill{height:100%;width:0;background:linear-gradient(90deg,#ffd86b,#ff9f1c);border-radius:6px;transition:.2s}
+  .barfill.over{background:#ff5a5a}
   .board{width:100%;max-width:560px;display:flex;gap:10px;justify-content:center;margin:0 auto 14px}
-  .sb{flex:1;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:11px;text-align:center}
+  .sb{flex:1;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:10px;text-align:center}
   .sb .l{font-size:11px;color:var(--sub);font-weight:700}
-  .sb .v{font-size:22px;font-weight:900;margin-top:3px;letter-spacing:-.5px}
-  .sb .v small{font-size:13px;color:var(--sub);font-weight:800}
-  .gold{color:#ffcf5c} .over .v{color:#ff7a7a}
+  .sb .v{font-size:20px;font-weight:900;margin-top:3px;letter-spacing:-.5px}
+  .gold{color:#ffcf5c}
+  .trayctrl{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:8px}
+  .trayctrl select{background:var(--panel);border:1px solid var(--line);color:var(--txt);padding:6px 9px;border-radius:9px;font-size:12px;font-weight:700}
+  .chk{font-size:11.5px;color:var(--sub);font-weight:700;display:flex;align-items:center;gap:4px;cursor:pointer}
+  .legend{font-size:10.5px;color:var(--sub);font-weight:800;margin-bottom:8px}
+  .legend b{font-weight:900}
+  .gb{width:26px;height:26px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;color:#fff;margin-left:auto;flex-shrink:0}
 
   .left{width:560px;max-width:100%}
   .field{position:relative;width:100%;padding-bottom:92%;border-radius:18px;overflow:hidden;background:#0b1020;border:1px solid #2a3550}
@@ -83,9 +96,13 @@
   <h1>🏟️ 주간 판타지 드림팀</h1>
   <div class="tag">예산 <b>150</b> 안에서 11명 드래프트 · <b id="wk"></b> 실제 성적으로 점수 · 매주 초기화</div>
 
+  <div class="budget" id="budgetBox">
+    <div class="bl"><span>💰 남은 예산</span><span id="spentTxt">0 사용</span></div>
+    <div class="bv"><span id="rem">100</span><small>/100</small></div>
+    <div class="bar"><div class="barfill" id="barfill"></div></div>
+  </div>
   <div class="board">
-    <div class="sb" id="sbScore"><div class="l">팀 주간 점수</div><div class="v gold">0</div></div>
-    <div class="sb" id="sbBudget"><div class="l">예산</div><div class="v"><span id="spent">0</span><small>/150</small></div></div>
+    <div class="sb"><div class="l">팀 주간 점수</div><div class="v gold" id="scoreV">0</div></div>
     <div class="sb"><div class="l">포인트</div><div class="v gold" id="points">1000</div></div>
   </div>
 
@@ -99,12 +116,17 @@
       </div>
     </div>
     <div class="tray">
-      <div style="display:flex;align-items:center;flex-wrap:wrap">
+      <div class="trayctrl">
         <div class="seg"><button id="th" class="on">🏏 타자</button><button id="tp">⚾ 투수</button></div>
-        <div class="seg sortseg"><button id="sFp" class="on">주간순</button><button id="sPr">가격순</button></div>
+        <select id="fTeam"></select>
+        <select id="fPos"></select>
       </div>
-      <input class="search" id="search" placeholder="🔍 선수 검색...">
-      <div class="hint">카드 클릭 후 빈 포지션을 누르거나 드래그해서 배치. <b style="color:#ffcf5c">노란값=이번주 판타지점수</b>, 아래는 가격.</div>
+      <div class="trayctrl">
+        <div class="seg"><button data-s="fp" class="on">주간↓</button><button data-s="priceDesc">가격↓</button><button data-s="priceAsc">가격↑</button></div>
+        <label class="chk"><input type="checkbox" id="fAfford"> 살 수 있는 선수만</label>
+      </div>
+      <input class="search" id="search" placeholder="🔍 이름 검색...">
+      <div class="legend">카드 색 = <b>이번 주 폼 등급</b> · <b style="color:#ffcf5c">●S</b> <b style="color:#c39bff">●A</b> <b style="color:#6fb4ff">●B</b> <b style="color:#5fe3a6">●C</b> <b style="color:#aab6cf">●D</b> &nbsp;|&nbsp; 숫자=주간점수 · 💰=가격</div>
       <div class="traygrid" id="traygrid"></div>
     </div>
   </div>
@@ -121,7 +143,7 @@
 <script src="positions.js"></script>
 <script src="weekly.js"></script>
 <script>
-const BUDGET=150;
+const BUDGET=100;
 const DATA={hit:(window.KBO_PLAYERS||[]),pit:(window.KBO_PITCHERS||[])};
 const WK=window.KBO_WEEKLY||{players:[],weekStart:'-'};
 const wmap={}; (WK.players||[]).forEach(p=>wmap[String(p.pid)]={fp:p.fp,line:p.line,gp:p.gp});
@@ -197,7 +219,8 @@ let points=+(localStorage.getItem('kbo_points')||1000);
 // 주간 초기화
 if(localStorage.getItem('kbo_week')!==WK.weekStart){ team={}; localStorage.setItem('kbo_week',WK.weekStart); }
 function save(){localStorage.setItem('kbo_team',JSON.stringify(team));localStorage.setItem('kbo_points',points);}
-let trayType='hit', sortBy='fp', q='', picked=null;
+let trayType='hit', sortBy='fp', q='', picked=null, fTeam='전체', fPos='전체', fAfford=false;
+const TEAMS=[...new Set([...DATA.hit,...DATA.pit].map(p=>p.team))];
 const usedSet=()=>new Set(Object.values(team).map(v=>v&&v.type+v.pid).filter(Boolean));
 function spent(){ return Object.values(team).map(v=>get(v.type,v.pid)).filter(Boolean).reduce((s,p)=>s+p.price,0); }
 function teamFp(){ return Math.round(Object.values(team).map(v=>get(v.type,v.pid)).filter(Boolean).reduce((s,p)=>s+p.wfp,0)*10)/10; }
@@ -247,15 +270,23 @@ function markSlots(){
 let dragData=null;
 function renderTray(){
   const used=usedSet(), rem=BUDGET-spent();
-  let list=DATA[trayType].filter(p=>(!q||p.name.includes(q))).filter(p=>!used.has(trayType+p.pid));
-  list.sort((a,b)=> sortBy==='fp' ? (b.wfp-a.wfp || a.price-b.price) : (a.price-b.price || b.wfp-a.wfp));
+  let list=DATA[trayType].filter(p=>!used.has(trayType+p.pid));
+  if(q) list=list.filter(p=>p.name.includes(q));
+  if(fTeam!=='전체') list=list.filter(p=>p.team===fTeam);
+  if(fPos!=='전체') list=list.filter(p=> trayType==='hit' ? p.pos===fPos : p.role===fPos);
+  if(fAfford) list=list.filter(p=>p.price<=rem);
+  list.sort((a,b)=> sortBy==='fp' ? (b.wfp-a.wfp || a.price-b.price)
+                  : sortBy==='priceDesc' ? (b.price-a.price || b.wfp-a.wfp)
+                  : (a.price-b.price || b.wfp-a.wfp));
   document.getElementById('traygrid').innerHTML=list.slice(0,150).map(p=>{
     const sel=picked&&picked.type===trayType&&picked.pid===p.pid?'sel':'';
     const cant=p.price>rem?'cantbuy':'';
+    const sub=trayType==='hit'?`${POSKR[p.pos]||'야수'}`:`${p.role}`;
     return `<div class="pcard ${sel} ${cant}" draggable="true" data-pid="${p.pid}">
       <img src="${p.photo}" draggable="false" onerror="this.onerror=null;this.src='${noimg}'">
-      <div style="min-width:0;flex:1"><div class="nm">${p.name}</div><div class="mt">${p.team} · ${POSKR[p.pos]||'야수'} · ${p.wline}</div></div>
-      <div class="rt"><div class="fpv" style="color:${p.wg.c}">${p.wfp}</div><div class="pr">💰${p.price}</div></div></div>`;
+      <div style="min-width:0;flex:1"><div class="nm">${p.name}</div><div class="mt">${p.team} · ${sub} · ${p.wline}</div>
+        <div class="mt" style="margin-top:3px"><b style="color:${p.wg.c}">${p.wfp}pt</b> · <b style="color:#ffcf5c">💰${p.price}</b></div></div>
+      <div class="gb" style="background:linear-gradient(160deg,${p.wg.g1},${p.wg.g2})">${p.wg.l}</div></div>`;
   }).join('')||`<div style="color:#6c7894;font-size:13px;padding:10px">선수 없음</div>`;
   document.querySelectorAll('.pcard').forEach(el=>{
     const pid=el.dataset.pid;
@@ -267,12 +298,22 @@ function renderTray(){
 }
 function board(){
   const sp=spent();
-  document.querySelector('#sbScore .v').textContent=teamFp();
-  document.getElementById('spent').textContent=sp;
-  document.getElementById('sbBudget').classList.toggle('over',sp>BUDGET);
+  document.getElementById('rem').textContent=BUDGET-sp;
+  document.getElementById('spentTxt').textContent=sp+' 사용';
+  const bf=document.getElementById('barfill'); bf.style.width=Math.min(100,sp/BUDGET*100)+'%'; bf.classList.toggle('over',sp>BUDGET);
+  document.getElementById('budgetBox').classList.toggle('over',sp>BUDGET);
+  document.getElementById('scoreV').textContent=teamFp();
   document.getElementById('points').textContent=points;
-  const full=ALLSLOTS.every(s=>team[s.id]);
-  document.getElementById('battle').disabled=!full;
+  document.getElementById('battle').disabled=!ALLSLOTS.every(s=>team[s.id]);
+}
+function buildFilters(){
+  const ft=document.getElementById('fTeam');
+  ft.innerHTML=['전체',...TEAMS].map(t=>`<option ${t===fTeam?'selected':''}>${t}</option>`).join('');
+  const opts=trayType==='hit'?['전체','포수','내야','외야']:['전체','선발','구원'];
+  if(!opts.includes(fPos))fPos='전체';
+  const fp=document.getElementById('fPos');
+  const lbl={'포수':'포수','내야':'내야수','외야':'외야수','선발':'선발','구원':'구원','전체':'전체 포지션'};
+  fp.innerHTML=opts.map(o=>`<option value="${o}" ${o===fPos?'selected':''}>${lbl[o]}</option>`).join('');
 }
 function render(){renderField();renderTray();}
 let flashT;
@@ -303,11 +344,16 @@ document.getElementById('battle').onclick=()=>{
 };
 document.getElementById('modal').onclick=e=>{if(e.target.id==='modal')e.currentTarget.classList.remove('on');};
 document.getElementById('reset').onclick=()=>{if(confirm('라인업을 비울까요?')){team={};save();picked=null;render();}};
-document.getElementById('th').onclick=()=>{trayType='hit';th.classList.add('on');tp.classList.remove('on');picked=null;renderTray();};
-document.getElementById('tp').onclick=()=>{trayType='pit';tp.classList.add('on');th.classList.remove('on');picked=null;renderTray();};
-document.getElementById('sFp').onclick=()=>{sortBy='fp';sFp.classList.add('on');sPr.classList.remove('on');renderTray();};
-document.getElementById('sPr').onclick=()=>{sortBy='price';sPr.classList.add('on');sFp.classList.remove('on');renderTray();};
+document.getElementById('th').onclick=()=>{trayType='hit';th.classList.add('on');tp.classList.remove('on');picked=null;buildFilters();renderTray();};
+document.getElementById('tp').onclick=()=>{trayType='pit';tp.classList.add('on');th.classList.remove('on');picked=null;buildFilters();renderTray();};
+document.querySelectorAll('.trayctrl .seg button[data-s]').forEach(b=>{
+  b.onclick=()=>{sortBy=b.dataset.s;document.querySelectorAll('.trayctrl .seg button[data-s]').forEach(x=>x.classList.remove('on'));b.classList.add('on');renderTray();};
+});
+document.getElementById('fTeam').onchange=e=>{fTeam=e.target.value;renderTray();};
+document.getElementById('fPos').onchange=e=>{fPos=e.target.value;renderTray();};
+document.getElementById('fAfford').onchange=e=>{fAfford=e.target.checked;renderTray();};
 document.getElementById('search').oninput=e=>{q=e.target.value.trim();renderTray();};
+buildFilters();
 document.getElementById('wk').textContent=(WK.weekStart||'-')+' 주';
 render();
 </script>
