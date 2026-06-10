@@ -1,0 +1,36 @@
+name: daily-heroes
+
+on:
+  schedule:
+    - cron: '40 14 * * *'   # 23:40 KST
+    - cron: '30 16 * * *'   # 01:30 KST (연장경기 캐치업)
+  workflow_dispatch:
+    inputs:
+      date:
+        description: '특정 날짜로 실행 (YYYY-MM-DD, 비우면 자동)'
+        required: false
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run heroes scraper
+        shell: pwsh
+        run: |
+          $date = "${{ github.event.inputs.date }}"
+          if (-not $date) { $date = (Get-Date).ToUniversalTime().AddHours(7).ToString('yyyy-MM-dd') }
+          Write-Host "Game date (KST): $date"
+          ./scrape_heroes.ps1 -Date $date
+
+      - name: Commit & push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add heroes.js
+          git diff --staged --quiet || git commit -m "auto: BEST/WORST 갱신"
+          git push
