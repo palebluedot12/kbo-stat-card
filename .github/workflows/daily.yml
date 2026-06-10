@@ -27,10 +27,14 @@ jobs:
           Write-Host "Game date (KST): $date"
           ./scrape_heroes.ps1 -Date $date
 
+      - name: Run weekly fantasy aggregator
+        shell: pwsh
+        run: ./scrape_week.ps1
+
       - name: Commit & push
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add heroes.js
-          git diff --staged --quiet || git commit -m "auto: BEST/WORST 갱신"
+          git add heroes.js weekly.js
+          git diff --staged --quiet || git commit -m "auto: BEST/WORST + 주간 판타지 갱신"
           git push
