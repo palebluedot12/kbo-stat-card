@@ -2,7 +2,7 @@ name: daily-heroes
 
 on:
   schedule:
-    - cron: '40 14 * * *'   # 23:40 KST
+    - cron: '30 14 * * *'   # 23:30 KST
     - cron: '30 16 * * *'   # 01:30 KST (연장경기 캐치업)
   workflow_dispatch:
     inputs:

@@ -118,12 +118,14 @@
     <div class="tray">
       <div class="trayctrl">
         <div class="seg"><button id="th" class="on">🏏 타자</button><button id="tp">⚾ 투수</button></div>
-        <select id="fTeam"></select>
-        <select id="fPos"></select>
+        <label class="chk"><input type="checkbox" id="fAfford"> 예산 내 선수만</label>
       </div>
       <div class="trayctrl">
-        <div class="seg"><button data-s="fp" class="on">주간↓</button><button data-s="priceDesc">가격↓</button><button data-s="priceAsc">가격↑</button></div>
-        <label class="chk"><input type="checkbox" id="fAfford"> 살 수 있는 선수만</label>
+        <select id="fTeam" style="flex:1"></select>
+        <select id="fPos" style="flex:1"></select>
+      </div>
+      <div class="trayctrl">
+        <div class="seg" style="flex:1;justify-content:center"><button data-s="fp" class="on">주간↓</button><button data-s="fpAsc">주간↑</button><button data-s="priceDesc">가격↓</button><button data-s="priceAsc">가격↑</button></div>
       </div>
       <input class="search" id="search" placeholder="🔍 이름 검색...">
       <div class="legend">카드 색 = <b>이번 주 폼 등급</b> · <b style="color:#ffcf5c">●S</b> <b style="color:#c39bff">●A</b> <b style="color:#6fb4ff">●B</b> <b style="color:#5fe3a6">●C</b> <b style="color:#aab6cf">●D</b> &nbsp;|&nbsp; 숫자=주간점수 · 💰=가격</div>
@@ -219,7 +221,7 @@ let points=+(localStorage.getItem('kbo_points')||1000);
 // 주간 초기화
 if(localStorage.getItem('kbo_week')!==WK.weekStart){ team={}; localStorage.setItem('kbo_week',WK.weekStart); }
 function save(){localStorage.setItem('kbo_team',JSON.stringify(team));localStorage.setItem('kbo_points',points);}
-let trayType='hit', sortBy='fp', q='', picked=null, fTeam='전체', fPos='전체', fAfford=false;
+let trayType='hit', sortBy='fp', q='', picked=null, fTeam='전체 팀', fPos='전체', fAfford=false;
 const TEAMS=[...new Set([...DATA.hit,...DATA.pit].map(p=>p.team))];
 const usedSet=()=>new Set(Object.values(team).map(v=>v&&v.type+v.pid).filter(Boolean));
 function spent(){ return Object.values(team).map(v=>get(v.type,v.pid)).filter(Boolean).reduce((s,p)=>s+p.price,0); }
@@ -272,10 +274,11 @@ function renderTray(){
   const used=usedSet(), rem=BUDGET-spent();
   let list=DATA[trayType].filter(p=>!used.has(trayType+p.pid));
   if(q) list=list.filter(p=>p.name.includes(q));
-  if(fTeam!=='전체') list=list.filter(p=>p.team===fTeam);
+  if(fTeam!=='전체 팀') list=list.filter(p=>p.team===fTeam);
   if(fPos!=='전체') list=list.filter(p=> trayType==='hit' ? p.pos===fPos : p.role===fPos);
   if(fAfford) list=list.filter(p=>p.price<=rem);
   list.sort((a,b)=> sortBy==='fp' ? (b.wfp-a.wfp || a.price-b.price)
+                  : sortBy==='fpAsc' ? (a.wfp-b.wfp || a.price-b.price)
                   : sortBy==='priceDesc' ? (b.price-a.price || b.wfp-a.wfp)
                   : (a.price-b.price || b.wfp-a.wfp));
   document.getElementById('traygrid').innerHTML=list.slice(0,150).map(p=>{
@@ -308,7 +311,7 @@ function board(){
 }
 function buildFilters(){
   const ft=document.getElementById('fTeam');
-  ft.innerHTML=['전체',...TEAMS].map(t=>`<option ${t===fTeam?'selected':''}>${t}</option>`).join('');
+  ft.innerHTML=['전체 팀',...TEAMS].map(t=>`<option ${t===fTeam?'selected':''}>${t}</option>`).join('');
   const opts=trayType==='hit'?['전체','포수','내야','외야']:['전체','선발','구원'];
   if(!opts.includes(fPos))fPos='전체';
   const fp=document.getElementById('fPos');
