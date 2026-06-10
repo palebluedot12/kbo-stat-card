@@ -13,6 +13,8 @@ $RE["000_0"]=0.53;$RE["100_0"]=0.96;$RE["010_0"]=1.22;$RE["001_0"]=1.44;$RE["110
 $RE["000_1"]=0.28;$RE["100_1"]=0.57;$RE["010_1"]=0.77;$RE["001_1"]=1.14;$RE["110_1"]=0.96;$RE["101_1"]=1.27;$RE["011_1"]=1.45;$RE["111_1"]=1.65
 $RE["000_2"]=0.11;$RE["100_2"]=0.23;$RE["010_2"]=0.34;$RE["001_2"]=0.38;$RE["110_2"]=0.48;$RE["101_2"]=0.52;$RE["011_2"]=0.61;$RE["111_2"]=0.80
 function REof($b1,$b2,$b3,$o){ if([int]$o -ge 3){return 0.0}; [double]$RE["$b1$b2$b3`_$o"] }
+function PInn($s){ $s=[string]$s; if($s -match '^(\d+)\.(\d)$'){[int]$matches[1]+[int]$matches[2]/3} elseif($s -match '^\d+$'){[double]$s} else {0} }
+$lgRA9=5.2   # 투수 REa = (lgRA9/9 × IP) − 실점
 
 $games = (J "https://api-gw.sports.naver.com/schedule/games?fields=basic&upperCategoryId=kbaseball&categoryId=kbo&fromDate=$Date&toDate=$Date&size=30").result.games
 Write-Host "[$Date] 경기 $($games.Count)개"
@@ -25,7 +27,7 @@ foreach($g in $games){
   Write-Host "  $awayT $($g.awayTeamScore) : $($g.homeTeamScore) $homeT ($gid)"
   try{ $rec=(J "https://api-gw.sports.naver.com/schedule/games/$gid/record").result.recordData }catch{ Write-Host "    기록없음 skip"; continue }
 
-  $meta=@{}
+  $meta=@{}; $prea=@{}
   foreach($side in 'away','home'){
     $tn=if($side -eq 'away'){$awayT}else{$homeT}
     foreach($b in $rec.battersBoxscore.$side){
@@ -35,6 +37,7 @@ foreach($g in $games){
     foreach($p in $rec.pitchersBoxscore.$side){
       $dec=if($p.wls){" $($p.wls)"}else{""}
       $meta[[string]$p.pcode]=@{name=$p.name;team=$tn;kind='투수';line="$($p.inn)이닝 $($p.er)자책 $($p.kk)K$dec"}
+      $prea[[string]$p.pcode]=[math]::Round(($lgRA9/9*(PInn $p.inn))-[int]$p.r,2)   # 투수 REa(rate)
     }
   }
 
@@ -69,10 +72,10 @@ foreach($g in $games){
       if($i -lt $seq.Count-1){ $n=$seq[$i+1]; $runs=$n.bsc-$p.bsc; $after=if($n.inn -eq $p.inn){REof $n.b1 $n.b2 $n.b3 $n.o}else{0.0} }
       else{ $runs=$final-$p.bsc; $after=0.0 }
       $v=$after+$runs-$before
-      if($p.bat){ $rea[$p.bat]=[double]$rea[$p.bat]+$v }
-      if($p.pit){ $rea[$p.pit]=[double]$rea[$p.pit]-$v }
+      if($p.bat){ $rea[$p.bat]=[double]$rea[$p.bat]+$v }   # 타자만 RE24
     }
   }
+  foreach($k in $prea.Keys){ $rea[$k]=$prea[$k] }   # 투수는 rate 방식으로 덮어씀
 
   $ranked = $rea.GetEnumerator() | Where-Object { $meta.ContainsKey($_.Key) } | Sort-Object Value -Descending
   function Card($kv){
