@@ -4,7 +4,10 @@ $ErrorActionPreference="Stop"; $ProgressPreference="SilentlyContinue"
 $ua="Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15"
 $HDR=@{Referer="https://m.sports.naver.com/"}
 function J($url){ (Invoke-WebRequest -Uri $url -UseBasicParsing -TimeoutSec 20 -UserAgent $ua -Headers $HDR).Content | ConvertFrom-Json }
-function PInn($s){ $s=[string]$s; if($s -match '^(\d+)\.(\d)$'){ [int]$matches[1]+[int]$matches[2]/3 } elseif($s -match '^\d+$'){ [double]$s } else { 0 } }
+function PInn($s){ $s=[string]$s; $w=0; $f=0.0
+  if($s -match '(\d+)'){ $w=[int]$matches[1] }
+  if($s.Contains([char]0x2154)){ $f=2.0/3 } elseif($s.Contains([char]0x2153)){ $f=1.0/3 } elseif($s -match '\.([12])$'){ $f=[int]$matches[1]/3.0 }
+  return $w+$f }
 
 # 이번 주 월요일 계산 (KST 기준)
 if(-not $WeekStart){
