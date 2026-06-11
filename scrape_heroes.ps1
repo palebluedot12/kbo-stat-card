@@ -17,7 +17,7 @@ function PInn($s){ $s=[string]$s; $w=0; $f=0.0
   if($s -match '(\d+)'){ $w=[int]$matches[1] }
   if($s.Contains([char]0x2154)){ $f=2.0/3 } elseif($s.Contains([char]0x2153)){ $f=1.0/3 } elseif($s -match '\.([12])$'){ $f=[int]$matches[1]/3.0 }
   return $w+$f }
-$lgRA9=5.9   # 투수 REa = (lgRA9/9 × IP) − 실점
+$lgRA9=5.5   # 투수 REa = (lgRA9/9 × IP) − 실점
 
 $games = (J "https://api-gw.sports.naver.com/schedule/games?fields=basic&upperCategoryId=kbaseball&categoryId=kbo&fromDate=$Date&toDate=$Date&size=30").result.games
 Write-Host "[$Date] 경기 $($games.Count)개"
@@ -64,26 +64,15 @@ foreach($g in $games){
     Start-Sleep -Milliseconds 100
   }
 
-  # REa (RE24 자체계산)
-  $rea=@{}
-  $pasS=@($pas|Sort-Object no)
-  foreach($team in '0','1'){
-    $seq=@($pasS|Where-Object{$_.ha -eq $team})
-    $final=if($team -eq '1'){[int]$g.homeTeamScore}else{[int]$g.awayTeamScore}
-    for($i=0;$i -lt $seq.Count;$i++){
-      $p=$seq[$i]; $before=REof $p.b1 $p.b2 $p.b3 $p.o
-      if($i -lt $seq.Count-1){ $n=$seq[$i+1]; $runs=$n.bsc-$p.bsc; $after=if($n.inn -eq $p.inn){REof $n.b1 $n.b2 $n.b3 $n.o}else{0.0} }
-      else{ $runs=$final-$p.bsc; $after=0.0 }
-      $v=$after+$runs-$before
-      if($p.bat){ $rea[$p.bat]=[double]$rea[$p.bat]+$v }   # 타자만 RE24
-    }
-  }
-  foreach($k in $prea.Keys){ $rea[$k]=$prea[$k] }   # 투수는 rate 방식으로 덮어씀
+  # 기여점수(승 단위): 타자=WPa(네이버), 투수=REa rate × 0.1
+  $score=@{}
+  foreach($k in $prea.Keys){ $score[$k]=[math]::Round([double]$prea[$k]*0.1,3) }
+  foreach($k in $wpa.Keys){ if($meta.ContainsKey($k) -and $meta[$k].kind -eq '타자'){ $score[$k]=[math]::Round([double]$wpa[$k]/100,3) } }
 
-  $ranked = $rea.GetEnumerator() | Where-Object { $meta.ContainsKey($_.Key) } | Sort-Object Value -Descending
+  $ranked = $score.GetEnumerator() | Where-Object { $meta.ContainsKey($_.Key) } | Sort-Object Value -Descending
   function Card($kv){
     $m=$meta[$kv.Key]
-    $card=[pscustomobject]@{ name=$m.name; team=$m.team; kind=$m.kind; rea=[math]::Round($kv.Value,2); wpa=[math]::Round([double]$wpa[$kv.Key]/100,3); line=$m.line; pid=$kv.Key; photo=($PHOTO+$kv.Key+".jpg") }
+    $card=[pscustomobject]@{ name=$m.name; team=$m.team; kind=$m.kind; score=[math]::Round($kv.Value,3); line=$m.line; pid=$kv.Key; photo=($PHOTO+$kv.Key+".jpg") }
     try{ $b=$wc.DownloadData($card.photo); if($b.Length -gt 800){ $card.photo="data:image/jpeg;base64,"+[Convert]::ToBase64String($b) } }catch{}
     return $card
   }
@@ -106,7 +95,7 @@ $root = if($PSScriptRoot){$PSScriptRoot}else{"H:\KBOWEB"}
 Write-Host ""
 foreach($go in $gamesOut){
   Write-Host "=== $($go.away) $($go.awayScore) : $($go.homeScore) $($go.home) ==="
-  $go.best | ForEach-Object { "  BEST {0} {1}({2}) REa {3} (WPA {4}) | {5}" -f $_.name,$_.team,$_.kind,$_.rea,$_.wpa,$_.line }
-  "  WORST {0} {1}({2}) REa {3} | {4}" -f $go.worst.name,$go.worst.team,$go.worst.kind,$go.worst.rea,$go.worst.line
+  $go.best | ForEach-Object { "  BEST {0} {1}({2}) 기여 {3} | {4}" -f $_.name,$_.team,$_.kind,$_.score,$_.line }
+  "  WORST {0} {1}({2}) 기여 {3} | {4}" -f $go.worst.name,$go.worst.team,$go.worst.kind,$go.worst.score,$go.worst.line
 }
 Write-Host "PBP: $($pbp.Count) 타석"
