@@ -67,7 +67,8 @@
     <a href="heroes.html" class="on">🔥 오늘의 BEST·WORST</a>
   </div>
   <h1>🔥 오늘의 BEST · WORST</h1>
-  <div class="tag" id="datetag">경기별 승리확률 기여(WPA) 기준</div>
+  <div class="tag" id="datetag">경기별 득점 기여(REa) 기준</div>
+  <div style="text-align:center;margin-bottom:18px"><a href="myteam.html" style="display:inline-block;background:linear-gradient(160deg,#2b6fff,#1b4fd0);color:#fff;padding:9px 18px;border-radius:11px;font-size:13px;font-weight:800;box-shadow:0 6px 16px -5px #2b6fff">🏟️ 이 선수들로 마이팀 짜러 가기 →</a><div style="font-size:10.5px;color:var(--sub);margin-top:7px">선수 카드를 누르면 마이팀에서 바로 검색돼요</div></div>
 
   <div class="grid" id="grid"></div>
 
@@ -77,10 +78,11 @@
 const D=window.KBO_HEROES;
 const noimg="https://6ptotvmi5753.edge.naverncp.com/KBO_IMAGE/KBOHome/resources/images/common/no-Image.png";
 const medals=['🥇','🥈','🥉'];
+function goMyteam(n){ location.href='myteam.html?q='+encodeURIComponent(n); }
 function fmtDate(s){const[y,m,d]=s.split('-');const wd=['일','월','화','수','목','금','토'][new Date(s+'T00:00:00').getDay()];return `${y}.${m}.${d} (${wd})`;}
 function prow(p,i,worst){
   const v=(p.rea==null?0:p.rea); const sign=v>=0?'+':'';
-  return `<div class="row ${worst?'wst':'r'+(i+1)}">
+  return `<div class="row ${worst?'wst':'r'+(i+1)}" style="cursor:pointer" title="마이팀에서 ${p.name} 검색" onclick="goMyteam('${(p.name||'').replace(/'/g,'')}')">
     <div class="medal">${worst?'😵':medals[i]}</div>
     <img class="ph" src="${p.photo}" onerror="this.onerror=null;this.src='${noimg}'">
     <div class="info"><div class="nm">${p.name}</div><div class="meta">${p.team} · ${p.kind}</div><div class="line">${p.line}</div></div>

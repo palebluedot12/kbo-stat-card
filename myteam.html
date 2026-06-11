@@ -118,7 +118,8 @@
     <div class="tray">
       <div class="trayctrl">
         <div class="seg"><button id="th" class="on">🏏 타자</button><button id="tp">⚾ 투수</button></div>
-        <label class="chk"><input type="checkbox" id="fAfford"> 예산 내 선수만</label>
+        <label class="chk"><input type="checkbox" id="fAfford"> 예산 내</label>
+        <label class="chk"><input type="checkbox" id="fBest"> 🔥오늘BEST</label>
       </div>
       <div class="trayctrl">
         <select id="fTeam" style="flex:1"></select>
@@ -144,6 +145,7 @@
 <script src="data_pitchers.js"></script>
 <script src="positions.js"></script>
 <script src="weekly.js"></script>
+<script src="heroes.js"></script>
 <script>
 const BUDGET=100;
 const DATA={hit:(window.KBO_PLAYERS||[]),pit:(window.KBO_PITCHERS||[])};
@@ -184,6 +186,9 @@ function pctOf(arr,v){if(!arr.length)return 50;let c=0;for(const x of arr)if(x<=
     p.wg=weekGrade(p.wfp);
   });
 })();
+// 오늘의 BEST 연계
+const BESTSET=new Set(); ((window.KBO_HEROES&&window.KBO_HEROES.games)||[]).forEach(g=>(g.best||[]).forEach(b=>BESTSET.add(String(b.pid))));
+[...DATA.hit,...DATA.pit].forEach(p=>{p.todayBest=BESTSET.has(String(p.pid));});
 const POSKR={'내야':'내야수','외야':'외야수','포수':'포수','투수':'투수'};
 const noimg="https://6ptotvmi5753.edge.naverncp.com/KBO_IMAGE/KBOHome/resources/images/common/no-Image.png";
 const get=(t,pid)=>DATA[t].find(p=>p.pid===pid);
@@ -221,7 +226,7 @@ let points=+(localStorage.getItem('kbo_points')||1000);
 // 주간 초기화
 if(localStorage.getItem('kbo_week')!==WK.weekStart){ team={}; localStorage.setItem('kbo_week',WK.weekStart); }
 function save(){localStorage.setItem('kbo_team',JSON.stringify(team));localStorage.setItem('kbo_points',points);}
-let trayType='hit', sortBy='fp', q='', picked=null, fTeam='전체 팀', fPos='전체', fAfford=false;
+let trayType='hit', sortBy='fp', q='', picked=null, fTeam='전체 팀', fPos='전체', fAfford=false, fBest=false;
 const TEAMS=[...new Set([...DATA.hit,...DATA.pit].map(p=>p.team))];
 const usedSet=()=>new Set(Object.values(team).map(v=>v&&v.type+v.pid).filter(Boolean));
 function spent(){ return Object.values(team).map(v=>get(v.type,v.pid)).filter(Boolean).reduce((s,p)=>s+p.price,0); }
@@ -277,6 +282,7 @@ function renderTray(){
   if(fTeam!=='전체 팀') list=list.filter(p=>p.team===fTeam);
   if(fPos!=='전체') list=list.filter(p=> trayType==='hit' ? p.pos===fPos : p.role===fPos);
   if(fAfford) list=list.filter(p=>p.price<=rem);
+  if(fBest) list=list.filter(p=>p.todayBest);
   list.sort((a,b)=> sortBy==='fp' ? (b.wfp-a.wfp || a.price-b.price)
                   : sortBy==='fpAsc' ? (a.wfp-b.wfp || a.price-b.price)
                   : sortBy==='priceDesc' ? (b.price-a.price || b.wfp-a.wfp)
@@ -287,7 +293,7 @@ function renderTray(){
     const sub=trayType==='hit'?`${POSKR[p.pos]||'야수'}`:`${p.role}`;
     return `<div class="pcard ${sel} ${cant}" draggable="true" data-pid="${p.pid}">
       <img src="${p.photo}" draggable="false" onerror="this.onerror=null;this.src='${noimg}'">
-      <div style="min-width:0;flex:1"><div class="nm">${p.name}</div><div class="mt">${p.team} · ${sub} · ${p.wline}</div>
+      <div style="min-width:0;flex:1"><div class="nm">${p.todayBest?'🔥 ':''}${p.name}</div><div class="mt">${p.team} · ${sub} · ${p.wline}</div>
         <div class="mt" style="margin-top:3px"><b style="color:${p.wg.c}">${p.wfp}pt</b> · <b style="color:#ffcf5c">💰${p.price}</b></div></div>
       <div class="gb" style="background:linear-gradient(160deg,${p.wg.g1},${p.wg.g2})">${p.wg.l}</div></div>`;
   }).join('')||`<div style="color:#6c7894;font-size:13px;padding:10px">선수 없음</div>`;
@@ -355,9 +361,12 @@ document.querySelectorAll('.trayctrl .seg button[data-s]').forEach(b=>{
 document.getElementById('fTeam').onchange=e=>{fTeam=e.target.value;renderTray();};
 document.getElementById('fPos').onchange=e=>{fPos=e.target.value;renderTray();};
 document.getElementById('fAfford').onchange=e=>{fAfford=e.target.checked;renderTray();};
+document.getElementById('fBest').onchange=e=>{fBest=e.target.checked;renderTray();};
 document.getElementById('search').oninput=e=>{q=e.target.value.trim();renderTray();};
 buildFilters();
 document.getElementById('wk').textContent=(WK.weekStart||'-')+' 주';
+const urlQ=new URLSearchParams(location.search).get('q');
+if(urlQ){ q=urlQ; document.getElementById('search').value=urlQ; }
 render();
 </script>
 </body>
