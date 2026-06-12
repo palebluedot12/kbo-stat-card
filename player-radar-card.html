@@ -159,10 +159,15 @@ const stc=s=>STUFFC[s]||'#bbb';
 let pActive=new Set();
 function drawTraj(p){
   const panel=document.getElementById('trajPanel'); const isPit=TYPE==='pit';
-  const data=isPit?(TRAJ.pitchers||{})[String(p.pid)]:(HR.hitters||{})[String(p.pid)];
-  if(!data||(isPit?!(data.pitches&&data.pitches.length):!(data.hrs&&data.hrs.length))){ panel.style.display='none'; return; }
-  panel.style.display='block';
-  if(isPit){ pActive=new Set(data.pitches.map(x=>x.s)); renderZone(data); } else renderSpray(data);
+  if(isPit){
+    const data=(TRAJ.pitchers||{})[String(p.pid)];
+    if(!data||!(data.pitches&&data.pitches.length)){ panel.style.display='none'; return; }
+    panel.style.display='block'; pActive=new Set(data.pitches.map(x=>x.s)); renderZone(data);
+  }else{
+    // 타자는 항상 홈런 스프레이 패널 표시 (홈런 0개면 빈 그라운드 + 안내)
+    const data=(HR.hitters||{})[String(p.pid)]||{hrs:[]};
+    panel.style.display='block'; renderSpray(data);
+  }
 }
 function renderZone(d){
   document.getElementById('trajPanel').innerHTML=`<h3>🎯 구종별 투구위치</h3><div class="sub">포수 시점 · ${TRAJ.from}~${TRAJ.to} · 총 ${d.pitches.length}구</div><svg id="tzone" width="290" height="320" viewBox="0 0 290 320"></svg><div class="toggles" id="ttg"></div><div class="ti">구종 눌러서 켜고 끄기</div>`;
@@ -215,6 +220,7 @@ function renderSpray(d){
     s+=`<line x1="${n(fp[0])}" y1="${n(fp[1])}" x2="${n(pt[0])}" y2="${n(pt[1])}" stroke="#ffcf5c" stroke-width="1.2" opacity=".5"/>`;
     s+=`<circle cx="${n(pt[0])}" cy="${n(pt[1])}" r="5.2" fill="#ff5a3c" stroke="#fff" stroke-width="1.4"/>`;
     s+=`<text x="${n(pt[0])}" y="${n(pt[1]-8)}" fill="#fff" font-size="8.5" font-weight="800" text-anchor="middle">${h.dist}</text>`;});
+  if(!d.hrs.length){ s+=`<text x="${HX}" y="200" fill="#9aa7c2" font-size="13" font-weight="800" text-anchor="middle">이번 시즌 홈런 없음</text>`; }
   const rng=(HR.from?`${HR.from}~${HR.to}`:'시즌');
   document.getElementById('trajPanel').innerHTML=`<h3>🎯 홈런 스프레이</h3><div class="sub">${rng} · 홈런 ${d.hrs.length}개 · <span style="color:#ffd24a">노란선=담장(넘기면 홈런)</span></div><svg viewBox="0 0 320 290" width="100%" style="display:block;max-width:300px;margin:0 auto">${s}</svg>`;
 }
