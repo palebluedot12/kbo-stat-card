@@ -99,6 +99,24 @@
   .chip .cg{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:900;color:#fff;flex-shrink:0}
   .note{max-width:900px;margin:24px auto 0;color:#6c7894;font-size:11px;text-align:center;line-height:1.7}
   ::-webkit-scrollbar{width:8px}::-webkit-scrollbar-thumb{background:#2a3550;border-radius:8px}
+
+  /* ===== 모바일 ===== */
+  @media (max-width:640px){
+    body{padding:14px 12px 50px}
+    .topbar{margin:-14px -12px 14px;padding:0 12px;height:50px;gap:2px}
+    .topbar .logo{font-size:15px;margin-right:6px}
+    .topbar .tabs a{padding:0 9px;font-size:13px}
+    .pagehead{margin-bottom:14px;gap:10px}
+    h1{font-size:18px}
+    .typetoggle{flex:1}
+    .typetoggle button{padding:10px 0;font-size:14.5px;flex:1}
+    .wrap{justify-content:center;gap:16px}
+    .detail{flex-direction:column;align-items:center;justify-content:center;gap:14px;width:100%}
+    .leftcol{order:1;align-items:center;width:100%;max-width:360px}
+    #trajPanel{order:2;margin-top:0;width:100%;max-width:360px}
+    .card{width:100%;max-width:360px}
+    .browser{order:3;width:100%}
+  }
 </style>
 </head>
 <body>
