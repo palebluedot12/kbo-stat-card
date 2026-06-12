@@ -20,6 +20,13 @@ function PInn($s){ $s=[string]$s; $w=0; $f=0.0
 $lgRA9=5.5   # 투수 REa = (lgRA9/9 × IP) − 실점
 
 $games = (J "https://api-gw.sports.naver.com/schedule/games?fields=basic&upperCategoryId=kbaseball&categoryId=kbo&fromDate=$Date&toDate=$Date&size=30").result.games
+# 종료경기 없으면 전날로 폴백 (예약 지연/날짜 롤오버 방지)
+$try=0
+while( (@($games|Where-Object{$_.statusCode -eq 'RESULT'}).Count -eq 0) -and $try -lt 3 ){
+  $Date=([datetime]::ParseExact($Date,'yyyy-MM-dd',$null)).AddDays(-1).ToString('yyyy-MM-dd'); $try++
+  $games=(J "https://api-gw.sports.naver.com/schedule/games?fields=basic&upperCategoryId=kbaseball&categoryId=kbo&fromDate=$Date&toDate=$Date&size=30").result.games
+  Write-Host "  종료경기 없음 → 전날로 [$Date]"
+}
 Write-Host "[$Date] 경기 $($games.Count)개"
 
 $gamesOut=@(); $pbp=@()
