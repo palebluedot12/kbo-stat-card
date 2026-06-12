@@ -9,16 +9,32 @@
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   body{margin:0;font-family:'Pretendard',-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
     background:radial-gradient(1200px 800px at 50% -10%,#16203a 0%,var(--bg) 60%);color:var(--txt);min-height:100vh;padding:24px 18px 60px}
-  h1{font-size:19px;letter-spacing:-.5px;margin:0 0 3px;font-weight:800}
-  .tag{color:var(--sub);font-size:12px;margin-bottom:14px}
+  h1{font-size:21px;letter-spacing:-.5px;margin:0 0 3px;font-weight:900}
+  .tag{color:var(--sub);font-size:12px}
   .seg{display:inline-flex;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:3px}
   .seg button{background:none;border:none;color:var(--sub);padding:7px 16px;border-radius:8px;font-size:13px;font-weight:800;cursor:pointer}
   .seg button.on{background:#2b6fff;color:#fff}
-  .typetoggle{margin-bottom:18px}
-  .typetoggle button{padding:8px 22px;font-size:14px}
 
-  .wrap{display:flex;gap:22px;align-items:flex-start;justify-content:center;flex-wrap:wrap;max-width:1240px;margin:0 auto}
-  .detail{display:flex;gap:18px;align-items:flex-start;justify-content:center;flex-wrap:wrap}
+  /* op.gg식 상단 탭바 */
+  .topbar{position:sticky;top:0;z-index:60;display:flex;align-items:center;height:56px;
+    margin:-24px -18px 18px;padding:0 20px;overflow-x:auto;
+    background:linear-gradient(180deg,#16213c,#0d1322);border-bottom:1px solid #2a3550;box-shadow:0 4px 18px -8px rgba(0,0,0,.6)}
+  .topbar .logo{font-weight:900;font-size:16px;letter-spacing:-.3px;margin-right:24px;white-space:nowrap;
+    background:linear-gradient(90deg,#ffd86b,#ff7a1c);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .topbar .tabs{display:flex;height:100%}
+  .topbar .tabs a{display:flex;align-items:center;height:100%;padding:0 18px;color:var(--sub);font-weight:800;font-size:15px;
+    text-decoration:none;border-bottom:3px solid transparent;white-space:nowrap;transition:.15s}
+  .topbar .tabs a:hover{color:var(--txt);background:rgba(255,255,255,.04)}
+  .topbar .tabs a.on{color:#fff;border-bottom-color:#2b6fff}
+
+  /* 타자/투수 토글 강조 */
+  .pagehead{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;max-width:1240px;margin:0 auto 18px}
+  .typetoggle{padding:4px;border:1px solid #33415f;border-radius:13px;box-shadow:0 6px 20px -10px rgba(0,0,0,.6)}
+  .typetoggle button{padding:11px 30px;font-size:15.5px;border-radius:10px;transition:.15s}
+  .typetoggle button.on{background:#2b6fff;color:#fff;box-shadow:0 6px 16px -6px #2b6fff}
+
+  .wrap{display:flex;gap:22px;align-items:flex-start;justify-content:flex-start;flex-wrap:wrap;max-width:1240px;margin:0 auto}
+  .detail{display:flex;gap:18px;align-items:flex-start;justify-content:flex-start;flex-wrap:wrap}
   .leftcol{display:flex;flex-direction:column;align-items:flex-start;gap:10px}
   .dlbtn{width:42px;height:42px;border-radius:12px;background:linear-gradient(160deg,#2b6fff,#1b4fd0);border:none;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 20px -6px #2b6fff;transition:.15s}
   .dlbtn:hover{filter:brightness(1.12);transform:translateY(-1px)} .dlbtn:disabled{opacity:.55;cursor:default}
@@ -86,14 +102,21 @@
 </style>
 </head>
 <body>
-  <div style="display:flex;gap:8px;justify-content:center;margin-bottom:14px">
-    <a href="index.html" style="background:#2b6fff;border:1px solid #2b6fff;color:#fff;padding:8px 16px;border-radius:999px;font-size:13px;font-weight:800;text-decoration:none">⚾ 선수 카드</a>
-    <a href="myteam.html" style="background:var(--panel);border:1px solid var(--line);color:var(--sub);padding:8px 16px;border-radius:999px;font-size:13px;font-weight:800;text-decoration:none">🏟️ 마이팀</a>
-    <a href="heroes.html" style="background:var(--panel);border:1px solid var(--line);color:var(--sub);padding:8px 16px;border-radius:999px;font-size:13px;font-weight:800;text-decoration:none">🔥 오늘의 BEST·WORST</a>
+  <div class="topbar">
+    <span class="logo">⚾ KBO 스탯카드</span>
+    <nav class="tabs">
+      <a href="index.html" class="on">선수 카드</a>
+      <a href="myteam.html">마이팀</a>
+      <a href="heroes.html">오늘의 BEST·WORST</a>
+    </nav>
   </div>
-  <h1>⚾ KBO 선수 레이더 카드</h1>
-  <div class="tag">2026 시즌 · KBO 공식기록 크롤링 · <span id="cntline"></span></div>
-  <div class="seg typetoggle"><button id="thit" class="on">🏏 타자</button><button id="tpit">⚾ 투수</button></div>
+  <div class="pagehead">
+    <div>
+      <h1>⚾ 선수 레이더 카드</h1>
+      <div class="tag">2026 시즌 · KBO 공식기록 크롤링 · <span id="cntline"></span></div>
+    </div>
+    <div class="seg typetoggle"><button id="thit" class="on">🏏 타자</button><button id="tpit">⚾ 투수</button></div>
+  </div>
 
   <div class="wrap">
     <div class="detail">
