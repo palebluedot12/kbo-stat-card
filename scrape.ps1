@@ -131,9 +131,10 @@ Write-Host "  사진 $okc/$($players.Count)"
 
 $players=$players|Sort-Object {-1*([double]$_.AVG)}
 $json=$players|ConvertTo-Json -Depth 5
-[System.IO.File]::WriteAllText("H:\KBOWEB\players.json",$json,(New-Object System.Text.UTF8Encoding $false))
-[System.IO.File]::WriteAllText("H:\KBOWEB\data.js","window.KBO_PLAYERS = $json;",(New-Object System.Text.UTF8Encoding $false))
+$root = if($PSScriptRoot){$PSScriptRoot}else{"H:\KBOWEB"}
+[System.IO.File]::WriteAllText("$root/players.json",$json,(New-Object System.Text.UTF8Encoding $false))
+[System.IO.File]::WriteAllText("$root/data.js","window.KBO_PLAYERS = $json;",(New-Object System.Text.UTF8Encoding $false))
 $qn2 = ($players | Where-Object { $_.qual }).Count
 Write-Host ""
-Write-Host "DONE: 전체 $($players.Count)명 / 규정 $qn2 명 -> H:\KBOWEB"
+Write-Host "DONE: 전체 $($players.Count)명 / 규정 $qn2 명 -> $root"
 $players | Where-Object { $_.qual } | Sort-Object {-1*$_.wRCplus} | Select-Object name,team,AVG,OBP,SLG,OPS,BBK,wRCplus,SB -First 8 | Format-Table -AutoSize

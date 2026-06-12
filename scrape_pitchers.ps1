@@ -124,7 +124,8 @@ Write-Host "  사진 $okc/$($pitchers.Count)"
 
 $pitchers=$pitchers|Sort-Object {[double]$_.ERA}
 $json=$pitchers|ConvertTo-Json -Depth 5
-[System.IO.File]::WriteAllText("H:\KBOWEB\data_pitchers.js","window.KBO_PITCHERS = $json;",(New-Object System.Text.UTF8Encoding $false))
+$root = if($PSScriptRoot){$PSScriptRoot}else{"H:\KBOWEB"}
+[System.IO.File]::WriteAllText("$root/data_pitchers.js","window.KBO_PITCHERS = $json;",(New-Object System.Text.UTF8Encoding $false))
 $qn=($pitchers|Where-Object{$_.qual}).Count
 Write-Host ""
 Write-Host "DONE: 전체 $($pitchers.Count)명 / 규정 $qn 명 -> data_pitchers.js"
