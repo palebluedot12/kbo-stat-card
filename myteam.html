@@ -3,16 +3,23 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>마이팀 · KBO 주간 판타지</title>
+<title>크보픽 · 마이팀</title>
 <style>
   :root{--bg:#0a0e1a;--panel:#121829;--line:#2a3550;--txt:#e8edf8;--sub:#8a96b4}
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   body{margin:0;font-family:'Pretendard',-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
     background:radial-gradient(1200px 800px at 50% -10%,#16203a 0%,var(--bg) 60%);color:var(--txt);min-height:100vh;padding:20px 16px 60px}
   a{color:inherit;text-decoration:none}
-  .nav{display:flex;gap:8px;justify-content:center;margin-bottom:14px;flex-wrap:wrap}
-  .nav a{background:var(--panel);border:1px solid var(--line);color:var(--sub);padding:8px 15px;border-radius:999px;font-size:13px;font-weight:800}
-  .nav a.on{background:#2b6fff;border-color:#2b6fff;color:#fff}
+  .topbar{position:sticky;top:0;z-index:60;display:flex;align-items:center;height:56px;
+    margin:-20px -16px 18px;padding:0 20px;overflow-x:auto;
+    background:linear-gradient(180deg,#16213c,#0d1322);border-bottom:1px solid #2a3550;box-shadow:0 4px 18px -8px rgba(0,0,0,.6)}
+  .topbar .logo{font-weight:900;font-size:16px;letter-spacing:-.3px;margin-right:24px;white-space:nowrap;
+    background:linear-gradient(90deg,#ffd86b,#ff7a1c);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .topbar .tabs{display:flex;height:100%}
+  .topbar .tabs a{display:flex;align-items:center;height:100%;padding:0 18px;color:var(--sub);font-weight:800;font-size:15px;
+    text-decoration:none;border-bottom:3px solid transparent;white-space:nowrap;transition:.15s}
+  .topbar .tabs a:hover{color:var(--txt);background:rgba(255,255,255,.04)}
+  .topbar .tabs a.on{color:#fff;border-bottom-color:#2b6fff}
   h1{font-size:19px;text-align:center;margin:0 0 3px;font-weight:800}
   .tag{color:var(--sub);font-size:12px;text-align:center;margin-bottom:16px}
   .tag b{color:#ffcf5c}
@@ -92,7 +99,14 @@
 </style>
 </head>
 <body>
-  <div class="nav"><a href="index.html">⚾ 선수 카드</a><a href="myteam.html" class="on">🏟️ 마이팀</a><a href="heroes.html">🔥 오늘의 BEST·WORST</a></div>
+  <div class="topbar">
+    <span class="logo">⚾ 크보픽</span>
+    <nav class="tabs">
+      <a href="index.html">선수 카드</a>
+      <a href="myteam.html" class="on">마이팀</a>
+      <a href="heroes.html">오늘의 BEST·WORST</a>
+    </nav>
+  </div>
   <h1>🏟️ 주간 판타지 드림팀</h1>
   <div class="tag">예산 <b>150</b> 안에서 11명 드래프트 · <b id="wk"></b> 실제 성적으로 점수 · 매주 초기화</div>
 
