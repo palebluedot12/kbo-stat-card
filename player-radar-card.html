@@ -17,7 +17,8 @@
   .typetoggle{margin-bottom:18px}
   .typetoggle button{padding:8px 22px;font-size:14px}
 
-  .wrap{display:flex;gap:22px;align-items:flex-start;justify-content:center;flex-wrap:wrap;max-width:1220px;margin:0 auto}
+  .wrap{display:flex;gap:22px;align-items:flex-start;justify-content:center;flex-wrap:wrap;max-width:1240px;margin:0 auto}
+  .detail{display:flex;gap:18px;align-items:flex-start;justify-content:center;flex-wrap:wrap}
   .leftcol{display:flex;flex-direction:column;align-items:flex-start;gap:10px}
   .dlbtn{width:42px;height:42px;border-radius:12px;background:linear-gradient(160deg,#2b6fff,#1b4fd0);border:none;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 20px -6px #2b6fff;transition:.15s}
   .dlbtn:hover{filter:brightness(1.12);transform:translateY(-1px)} .dlbtn:disabled{opacity:.55;cursor:default}
@@ -95,6 +96,7 @@
   <div class="seg typetoggle"><button id="thit" class="on">🏏 타자</button><button id="tpit">⚾ 투수</button></div>
 
   <div class="wrap">
+    <div class="detail">
     <div class="leftcol">
       <button class="dlbtn" id="dl" title="이 카드 PNG로 저장">
         <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 11l5 5 5-5M5 21h14"/></svg>
@@ -120,6 +122,7 @@
       </div>
     </div>
     <div class="traj" id="trajPanel" style="display:none"></div>
+    </div>
 
     <div class="browser">
       <input class="search" id="search" placeholder="🔍 선수 이름 검색...">
@@ -142,6 +145,7 @@
 <script src="data_pitchers.js"></script>
 <script src="positions.js"></script>
 <script src="trajectory.js"></script>
+<script src="traj_hr.js"></script>
 <script>
 const DATA={hit:(window.KBO_PLAYERS||[]),pit:(window.KBO_PITCHERS||[])};
 DATA.hit.forEach(p=>{p.pos=(window.KBO_POS&&window.KBO_POS[p.pid])||'내야';});
@@ -149,12 +153,13 @@ const POSKR={'내야':'내야수','외야':'외야수','포수':'포수'};
 
 // ===== 궤적: 구종별 투구위치 / 홈런 스프레이 =====
 const TRAJ=window.KBO_TRAJ||{pitchers:{},hitters:{}};
+const HR=window.KBO_HR||{hitters:{}};
 const STUFFC={'직구':'#ff5a5a','포심':'#ff5a5a','투심':'#ff8a3d','싱커':'#ff8a3d','커터':'#ff3df0','슬라이더':'#4d9bff','커브':'#a78bff','체인지업':'#5fe3a6','포크':'#ffcf5c','스플리터':'#ffcf5c','스위퍼':'#2ee6e6','너클볼':'#99a'};
 const stc=s=>STUFFC[s]||'#bbb';
 let pActive=new Set();
 function drawTraj(p){
   const panel=document.getElementById('trajPanel'); const isPit=TYPE==='pit';
-  const data=isPit?(TRAJ.pitchers||{})[String(p.pid)]:(TRAJ.hitters||{})[String(p.pid)];
+  const data=isPit?(TRAJ.pitchers||{})[String(p.pid)]:(HR.hitters||{})[String(p.pid)];
   if(!data||(isPit?!(data.pitches&&data.pitches.length):!(data.hrs&&data.hrs.length))){ panel.style.display='none'; return; }
   panel.style.display='block';
   if(isPit){ pActive=new Set(data.pitches.map(x=>x.s)); renderZone(data); } else renderSpray(data);
@@ -176,29 +181,42 @@ function zoneDots(d){
   document.getElementById('tzone').innerHTML=s;
 }
 function renderSpray(d){
-  const HX=145,HY=255,FEN=150,OUT=200;          // 담장반경 / 스탠드 바깥
+  // 마이팀과 동일한 야구장(포수 뒤 시점) · 홈 (160,270), 담장반경 170
+  const HX=160,HY=270,FEN=170,OUT=206;
   const P=(r,deg)=>[HX+r*Math.sin(deg*Math.PI/180),HY-r*Math.cos(deg*Math.PI/180)];
-  const fl=P(FEN,-45),fr=P(FEN,45),ol=P(OUT,-45),or=P(OUT,45);  // 담장/스탠드 좌우 모서리
-  // 홈런 착지반경: 95m=담장 바로 너머 → 145m=스탠드 깊숙이
-  const Rd=dist=>Math.max(FEN+5,Math.min(OUT-3,FEN+(dist-95)*1.45));
-  let s='';
-  // 외야 잔디 (홈→담장)
-  s+=`<path d="M${HX} ${HY} L${fl[0].toFixed(0)} ${fl[1].toFixed(0)} A${FEN} ${FEN} 0 0 1 ${fr[0].toFixed(0)} ${fr[1].toFixed(0)} Z" fill="#2f7d43"/>`;
-  // 내야 (옅은 잔디)
-  const il=P(70,-45),ir=P(70,45);
-  s+=`<path d="M${HX} ${HY} L${il[0].toFixed(0)} ${il[1].toFixed(0)} A70 70 0 0 1 ${ir[0].toFixed(0)} ${ir[1].toFixed(0)} Z" fill="#3a8f4f" opacity=".55"/>`;
-  // 담장 너머 스탠드 (어둡게) — 담장을 넘어가야 도달하는 영역
-  s+=`<path d="M${fl[0].toFixed(0)} ${fl[1].toFixed(0)} A${FEN} ${FEN} 0 0 1 ${fr[0].toFixed(0)} ${fr[1].toFixed(0)} L${or[0].toFixed(0)} ${or[1].toFixed(0)} A${OUT} ${OUT} 0 0 0 ${ol[0].toFixed(0)} ${ol[1].toFixed(0)} Z" fill="#1a2138"/>`;
+  const n=(v)=>v.toFixed(1);
+  const fl=P(FEN,-45),fr=P(FEN,45),ol=P(OUT,-45),or=P(OUT,45);
+  let s=`<defs><linearGradient id="fldg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4bb061"/><stop offset="1" stop-color="#2f8545"/></linearGradient></defs>`;
+  // 담장 너머 스탠드 (어두운 외곽) — 먼저 깔기
+  s+=`<path d="M${n(fl[0])} ${n(fl[1])} A${FEN} ${FEN} 0 0 1 ${n(fr[0])} ${n(fr[1])} L${n(or[0])} ${n(or[1])} A${OUT} ${OUT} 0 0 0 ${n(ol[0])} ${n(ol[1])} Z" fill="#11182b"/>`;
+  // 마이팀 야구장 (홈→담장반경 320을 170로 축소: translate+scale)
+  s+=`<g transform="translate(27.19 52.19) scale(0.53125)">
+    <path d="M250 410 L476 184 A320 320 0 0 0 24 184 Z" fill="url(#fldg)"/>
+    <path d="M250 410 L405 255 A220 220 0 0 0 95 255 Z" fill="#43a558" opacity="0.55"/>
+    <path d="M250 410 L335 325 A120 120 0 0 0 165 325 Z" fill="#4aab5f" opacity="0.5"/>
+    <line x1="250" y1="410" x2="24" y2="184" stroke="#fff" stroke-width="3" opacity="0.85"/>
+    <line x1="250" y1="410" x2="476" y2="184" stroke="#fff" stroke-width="3" opacity="0.85"/>
+    <path d="M250 410 L356 304 L250 198 L144 304 Z" fill="#d9a25d"/>
+    <circle cx="250" cy="410" r="38" fill="#d9a25d"/>
+    <path d="M250 391 L337 304 L250 217 L163 304 Z" fill="#46a85b"/>
+    <g fill="#fff" stroke="#e2e2e2" stroke-width="1.5">
+      <rect x="349" y="297" width="14" height="14" transform="rotate(45 356 304)"/>
+      <rect x="243" y="191" width="14" height="14" transform="rotate(45 250 198)"/>
+      <rect x="137" y="297" width="14" height="14" transform="rotate(45 144 304)"/></g>
+    <polygon points="242,404 258,404 258,413 250,420 242,413" fill="#fff"/>
+    <circle cx="250" cy="316" r="22" fill="#d9a25d"/><rect x="245" y="313" width="10" height="5" rx="1.5" fill="#fff"/>
+  </g>`;
   // 담장 (노란 벽)
-  s+=`<path d="M${fl[0].toFixed(0)} ${fl[1].toFixed(0)} A${FEN} ${FEN} 0 0 1 ${fr[0].toFixed(0)} ${fr[1].toFixed(0)}" fill="none" stroke="#ffd24a" stroke-width="4" stroke-linecap="round"/>`;
-  // 파울 라인
-  s+=`<line x1="${HX}" y1="${HY}" x2="${ol[0].toFixed(0)}" y2="${ol[1].toFixed(0)}" stroke="#fff" stroke-width="1.5" opacity=".55"/><line x1="${HX}" y1="${HY}" x2="${or[0].toFixed(0)}" y2="${or[1].toFixed(0)}" stroke="#fff" stroke-width="1.5" opacity=".55"/>`;
-  s+=`<circle cx="${HX}" cy="${HY}" r="3.5" fill="#fff"/>`;
-  s+=`<text x="${HX}" y="${(P(FEN,0)[1]-6).toFixed(0)}" fill="#ffd24a" font-size="9" font-weight="900" text-anchor="middle" opacity=".9">담장</text>`;
-  // 홈런 착지점 (모두 담장 너머)
-  d.hrs.forEach(h=>{const r=Rd(h.dist),[x,y]=P(r,h.deg);
-    s+=`<line x1="${HX}" y1="${HY}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" stroke="#ffcf5c" stroke-width="1" opacity=".28"/><circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="5" fill="#ff5a3c" stroke="#fff" stroke-width="1.3"/><text x="${x.toFixed(1)}" y="${(y-8).toFixed(1)}" fill="#fff" font-size="8.5" font-weight="800" text-anchor="middle">${h.dist}</text>`;});
-  document.getElementById('trajPanel').innerHTML=`<h3>🎯 홈런 스프레이</h3><div class="sub">${TRAJ.from}~${TRAJ.to} · 홈런 ${d.hrs.length}개 · <span style="color:#ffd24a">노란선=담장</span></div><svg width="290" height="270" viewBox="0 0 290 270">${s}</svg>`;
+  s+=`<path d="M${n(fl[0])} ${n(fl[1])} A${FEN} ${FEN} 0 0 1 ${n(fr[0])} ${n(fr[1])}" fill="none" stroke="#ffd24a" stroke-width="4.5" stroke-linecap="round"/>`;
+  s+=`<text x="${HX}" y="${n(P(FEN,0)[1]-6)}" fill="#ffd24a" font-size="10" font-weight="900" text-anchor="middle">담장</text>`;
+  // 홈런 착지점 — 모두 담장 밖(스탠드)에 표시
+  const Rd=dist=>Math.max(FEN+8,Math.min(OUT-3,FEN+8+(dist-100)*0.9));
+  d.hrs.forEach(h=>{const r=Rd(h.dist),pt=P(r,h.deg),fp=P(FEN,h.deg);
+    s+=`<line x1="${n(fp[0])}" y1="${n(fp[1])}" x2="${n(pt[0])}" y2="${n(pt[1])}" stroke="#ffcf5c" stroke-width="1.2" opacity=".5"/>`;
+    s+=`<circle cx="${n(pt[0])}" cy="${n(pt[1])}" r="5.2" fill="#ff5a3c" stroke="#fff" stroke-width="1.4"/>`;
+    s+=`<text x="${n(pt[0])}" y="${n(pt[1]-8)}" fill="#fff" font-size="8.5" font-weight="800" text-anchor="middle">${h.dist}</text>`;});
+  const rng=(HR.from?`${HR.from}~${HR.to}`:'시즌');
+  document.getElementById('trajPanel').innerHTML=`<h3>🎯 홈런 스프레이</h3><div class="sub">${rng} · 홈런 ${d.hrs.length}개 · <span style="color:#ffd24a">노란선=담장(넘기면 홈런)</span></div><svg viewBox="0 0 320 290" width="100%" style="display:block;max-width:300px;margin:0 auto">${s}</svg>`;
 }
 const fmt3=v=>(v==null?'-':v.toFixed(3).replace(/^0/,''));
 const f2=v=>(v==null?'-':v.toFixed(2));
