@@ -2,8 +2,12 @@ name: daily-heroes
 
 on:
   schedule:
+    # GitHub 예약은 best-effort라 누락될 수 있어 여러 번 시도(스크래퍼는 최신 종료일만·변경시에만 커밋이라 중복 안전)
     - cron: '30 14 * * *'   # 23:30 KST
-    - cron: '30 16 * * *'   # 01:30 KST (연장경기 캐치업)
+    - cron: '0 16 * * *'    # 01:00 KST
+    - cron: '30 17 * * *'   # 02:30 KST
+    - cron: '30 19 * * *'   # 04:30 KST
+    - cron: '0 22 * * *'    # 07:00 KST (아침 최종 보정)
   workflow_dispatch:
     inputs:
       date:
