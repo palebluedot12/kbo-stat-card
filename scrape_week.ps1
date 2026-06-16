@@ -1,5 +1,5 @@
 ﻿# 주간 판타지 포인트: 그 주(월~오늘) 전 경기 박스스코어 합산 → weekly.js
-param([string]$WeekStart = "")
+param([string]$WeekStart = "", [switch]$Prev, [string]$OutFile = "weekly.js", [string]$Var = "KBO_WEEKLY")
 $ErrorActionPreference="Stop"; $ProgressPreference="SilentlyContinue"
 $ua="Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15"
 $HDR=@{Referer="https://m.sports.naver.com/"}
@@ -13,7 +13,9 @@ function PInn($s){ $s=[string]$s; $w=0; $f=0.0
 if(-not $WeekStart){
   $now=(Get-Date).ToUniversalTime().AddHours(9)
   $off=(([int]$now.DayOfWeek+6)%7)   # 월=0
-  $WeekStart=$now.AddDays(-$off).ToString('yyyy-MM-dd')
+  $mon0=$now.AddDays(-$off)
+  if($Prev){ $mon0=$mon0.AddDays(-7) }   # 지난주(완료된 주)
+  $WeekStart=$mon0.ToString('yyyy-MM-dd')
 }
 $mon=[datetime]::ParseExact($WeekStart,'yyyy-MM-dd',$null)
 $today=(Get-Date).ToUniversalTime().AddHours(9).Date
@@ -68,7 +70,7 @@ foreach($pc in $agg.Keys){
 $out=[ordered]@{ weekStart=$mon.ToString('yyyy-MM-dd'); weekEnd=$end.ToString('yyyy-MM-dd'); players=$players }
 $json=$out|ConvertTo-Json -Depth 6
 $root=if($PSScriptRoot){$PSScriptRoot}else{"H:\KBOWEB"}
-[System.IO.File]::WriteAllText("$root/weekly.js","window.KBO_WEEKLY = $json;",(New-Object System.Text.UTF8Encoding $false))
-Write-Host "weekly.js 생성: $($players.Count)명"
+[System.IO.File]::WriteAllText("$root/$OutFile","window.$Var = $json;",(New-Object System.Text.UTF8Encoding $false))
+Write-Host "$OutFile 생성: $($players.Count)명"
 "=== 주간 판타지 TOP 10 ==="
 $players|Sort-Object fp -Descending|Select-Object -First 10|ForEach-Object{ "  {0,-7} {1,-4} {2} fp={3} | {4}" -f $_.name,$_.team,$_.kind,$_.fp,$_.line }

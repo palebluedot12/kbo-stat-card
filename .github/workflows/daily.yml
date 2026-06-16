@@ -33,7 +33,9 @@ jobs:
 
       - name: Run weekly fantasy aggregator
         shell: pwsh
-        run: ./scrape_week.ps1
+        run: |
+          ./scrape_week.ps1
+          ./scrape_week.ps1 -Prev -OutFile weekly_prev.js -Var KBO_WEEKLY_PREV
 
       - name: Run season stats (hitters + pitchers)
         shell: pwsh
@@ -51,6 +53,6 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add heroes.js weekly.js data.js data_pitchers.js trajectory.js traj_hr.js
+          git add heroes.js weekly.js weekly_prev.js data.js data_pitchers.js trajectory.js traj_hr.js
           git diff --staged --quiet || git commit -m "auto: 일일 데이터 갱신 (BEST/WORST·주간·누적스탯)"
           git push

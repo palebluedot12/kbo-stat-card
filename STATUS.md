@@ -5,13 +5,14 @@
 
 ## 페이지 (정적 HTML, Vercel 자동배포)
 - **index.html** — 선수 카드(배포 정식 페이지). ⚠️ 중복본 player-radar-card.html은 삭제됨, **반드시 index.html 수정**
-- **myteam.html** — 마이팀(주간 판타지, 예산 100, 드래그)
+- **myteam.html** — 마이팀(주간 판타지, **예산 120**, 드래그). **가격=지난주 판타지점수 백분위 기준**(weekly_prev.js), 점수=이번주 라이브(weekly.js)
 - **heroes.html** — 오늘의 BEST·WORST(경기별 승리기여)
 - 공통: 상단 op.gg식 sticky 탭바, OG 공유태그, og.png(공유 썸네일), 모바일 반응형(@media max-width:640)
 
 ## 데이터 파일 (GitHub Actions가 매일 자동 갱신 — 직접 수정/통독 금지, 4MB)
 - data.js / data_pitchers.js — 시즌 누적(KBO_PLAYERS/KBO_PITCHERS), base64 사진
-- heroes.js(BEST/WORST) · weekly.js(마이팀 주간)
+- heroes.js(BEST/WORST) · weekly.js(이번주 주간) · weekly_prev.js(지난주=가격산정용, KBO_WEEKLY_PREV)
+- positions.js(KBO_POS, 타자 주포지션=올시즌 최다출장 G 기준) — **수동** `patch_positions.ps1`(KBO 수비기록). 자동갱신 아님
 - trajectory.js(투구 최근10일·KBO_TRAJ) · traj_hr.js(시즌 홈런·KBO_HR, 누적)
 
 ## 스크래퍼 / 자동화

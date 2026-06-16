@@ -138,12 +138,12 @@
     </nav>
   </div>
   <h1>🏟️ 주간 판타지 드림팀</h1>
-  <div class="tag">예산 <b>100</b> 안에서 11명 드래프트 · <b id="wk"></b> 실제 성적으로 점수 · 매주 초기화</div>
+  <div class="tag">예산 <b>120</b> 안에서 11명 드래프트 · <b id="wk"></b> 실제 성적으로 점수 · 매주 초기화</div>
   <div id="shareBanner"></div>
 
   <div class="budget" id="budgetBox">
     <div class="bl"><span>💰 남은 예산</span><span id="spentTxt">0 사용</span></div>
-    <div class="bv"><span id="rem">100</span><small>/100</small></div>
+    <div class="bv"><span id="rem">120</span><small>/120</small></div>
     <div class="bar"><div class="barfill" id="barfill"></div></div>
   </div>
   <div class="board">
@@ -193,12 +193,16 @@
 <script src="data_pitchers.js"></script>
 <script src="positions.js"></script>
 <script src="weekly.js"></script>
+<script src="weekly_prev.js"></script>
 <script src="heroes.js"></script>
 <script>
-const BUDGET=100;
+const BUDGET=120;
 const DATA={hit:(window.KBO_PLAYERS||[]),pit:(window.KBO_PITCHERS||[])};
 const WK=window.KBO_WEEKLY||{players:[],weekStart:'-'};
 const wmap={}; (WK.players||[]).forEach(p=>wmap[String(p.pid)]={fp:p.fp,line:p.line,gp:p.gp});
+// 지난주(완료된 주) 판타지점수 — 가격 산정 기준
+const PREV=window.KBO_WEEKLY_PREV||{players:[]};
+const pmap={}; (PREV.players||[]).forEach(p=>pmap[String(p.pid)]=p.fp);
 
 function gradeOf(s){
   if(s>=80) return {l:"S",g1:"#ffd86b",g2:"#ff9f1c",c:"#ffcf5c"};
@@ -228,8 +232,13 @@ function pctOf(arr,v){if(!arr.length)return 50;let c=0;for(const x of arr)if(x<=
   // 포지션/타입/가격/주간
   DATA.hit.forEach(p=>{p.pos=(window.KBO_POS&&window.KBO_POS[p.pid])||'내야';p.type='hit';});
   DATA.pit.forEach(p=>{p.pos='투수';p.type='pit';});
+  // 가격: 지난주 판타지점수 백분위 기반(타자/투수 분리) — 최근 폼 반영, 지난주 무기록은 최저가
+  const hitPrev=DATA.hit.map(p=>pmap[String(p.pid)]).filter(v=>v!=null).sort((a,b)=>a-b);
+  const pitPrev=DATA.pit.map(p=>pmap[String(p.pid)]).filter(v=>v!=null).sort((a,b)=>a-b);
   [...DATA.hit,...DATA.pit].forEach(p=>{
-    p.price=Math.max(2,Math.round(2+Math.pow(p._ovr/100,1.3)*28));
+    const pf=pmap[String(p.pid)]; p.prevFp=(pf==null?null:pf);
+    if(pf==null){ p.price=2; }
+    else { const arr=p.type==='hit'?hitPrev:pitPrev; const pct=arr.length?pctOf(arr,pf):50; p.price=Math.max(2,Math.round(2+Math.pow(pct/100,1.3)*28)); }
     const w=wmap[String(p.pid)]; p.wfp=w?w.fp:0; p.wline=w?w.line:'이번 주 기록 없음';
     p.wg=weekGrade(p.wfp);
   });
